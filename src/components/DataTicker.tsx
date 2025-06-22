@@ -1,24 +1,71 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown, Zap } from 'lucide-react';
+import { CryptoService, TokenData } from '@/services/cryptoService';
 
 const DataTicker = () => {
-  const tickerData = [
-    { label: 'ETH', value: '$2,345.67', change: '+5.2%', positive: true },
-    { label: 'BTC', value: '$43,210.00', change: '+2.1%', positive: true },
-    { label: 'Gas', value: '32 gwei', change: '-8%', positive: true },
-    { label: 'TVL', value: '$45.2B', change: '+1.4%', positive: true },
-    { label: 'Volume', value: '$12.8B', change: '+15.7%', positive: true },
-    { label: 'LINK', value: '$14.32', change: '-1.8%', positive: false },
-  ];
+  const [tickerData, setTickerData] = useState<any[]>([]);
+  const [networkData, setNetworkData] = useState<any>(null);
+  const cryptoService = CryptoService.getInstance();
+
+  useEffect(() => {
+    const updateData = async () => {
+      try {
+        // Get token data
+        const tokens = await cryptoService.getTokenData(['ETH', 'BTC', 'LINK', 'UNI', 'MATIC']);
+        const network = await cryptoService.getNetworkData();
+        
+        const formattedData = [
+          ...tokens.map(token => ({
+            label: token.symbol,
+            value: `$${token.price.toFixed(2)}`,
+            change: `${token.change24h > 0 ? '+' : ''}${token.change24h.toFixed(1)}%`,
+            positive: token.change24h > 0
+          })),
+          {
+            label: 'Gas',
+            value: `${Math.round(network.gasPrice)} gwei`,
+            change: network.gasPrice < 35 ? 'Low' : network.gasPrice > 60 ? 'High' : 'Normal',
+            positive: network.gasPrice < 50
+          },
+          {
+            label: 'Block',
+            value: network.blockHeight.toLocaleString(),
+            change: `${network.tps.toFixed(1)} TPS`,
+            positive: network.tps > 13
+          }
+        ];
+
+        setTickerData(formattedData);
+        setNetworkData(network);
+      } catch (error) {
+        console.error('Error updating ticker data:', error);
+      }
+    };
+
+    updateData();
+    const interval = setInterval(updateData, 30000); // Update every 30 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  if (tickerData.length === 0) {
+    return (
+      <div className="fixed bottom-0 left-0 right-0 glass border-t border-white/10 z-40">
+        <div className="py-3 flex justify-center">
+          <span className="text-gray-400">Loading market data...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed bottom-0 left-0 right-0 glass border-t border-white/10 z-40">
       <div className="overflow-hidden py-3">
         <div className="animate-marquee flex space-x-8 whitespace-nowrap">
           {[...tickerData, ...tickerData].map((item, index) => (
-            <div key={index} className="flex items-center space-x-2 px-4">
+            <div key={`${item.label}-${index}`} className="flex items-center space-x-2 px-4">
               <span className="text-gray-400 font-medium">{item.label}:</span>
               <span className="text-white font-semibold">{item.value}</span>
               <Badge

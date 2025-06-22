@@ -1,20 +1,43 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, TrendingDown, Wallet, Eye, Star } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { CryptoService, TokenData } from '@/services/cryptoService';
 
 const Sidebar = () => {
   const { toast } = useToast();
+  const [trendingTokens, setTrendingTokens] = useState<any[]>([]);
+  const [networkData, setNetworkData] = useState<any>(null);
+  const cryptoService = CryptoService.getInstance();
 
-  const trendingTokens = [
-    { symbol: 'ETH', price: '$2,345.67', change: '+5.2%', positive: true },
-    { symbol: 'BTC', price: '$43,210.00', change: '+2.1%', positive: true },
-    { symbol: 'LINK', price: '$14.32', change: '-1.8%', positive: false },
-    { symbol: 'UNI', price: '$6.78', change: '+8.4%', positive: true },
-  ];
+  useEffect(() => {
+    const updateData = async () => {
+      try {
+        const tokens = await cryptoService.getTokenData(['ETH', 'BTC', 'LINK', 'UNI']);
+        const network = await cryptoService.getNetworkData();
+        
+        const formattedTokens = tokens.map(token => ({
+          symbol: token.symbol,
+          price: `$${token.price.toFixed(2)}`,
+          change: `${token.change24h > 0 ? '+' : ''}${token.change24h.toFixed(1)}%`,
+          positive: token.change24h > 0
+        }));
+
+        setTrendingTokens(formattedTokens);
+        setNetworkData(network);
+      } catch (error) {
+        console.error('Error updating sidebar data:', error);
+      }
+    };
+
+    updateData();
+    const interval = setInterval(updateData, 30000); // Update every 30 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   const quickActions = [
     { 
@@ -30,7 +53,7 @@ const Sidebar = () => {
     },
     { 
       title: 'Token Explorer', 
-      desc: 'Research tokens', 
+      desc: 'Research tokens & contracts', 
       icon: Eye,
       action: () => {
         toast({
@@ -41,7 +64,7 @@ const Sidebar = () => {
     },
     { 
       title: 'Portfolio Tracker', 
-      desc: 'Track holdings', 
+      desc: 'Track holdings & performance', 
       icon: Star,
       action: () => {
         toast({
@@ -84,9 +107,9 @@ const Sidebar = () => {
 
       {/* Trending Tokens */}
       <Card className="glass p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">Trending Tokens</h3>
+        <h3 className="text-lg font-semibold text-white mb-4">Live Prices</h3>
         <div className="space-y-3">
-          {trendingTokens.map((token) => (
+          {trendingTokens.length > 0 ? trendingTokens.map((token) => (
             <div 
               key={token.symbol} 
               className="flex items-center justify-between p-3 glass rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
@@ -117,31 +140,46 @@ const Sidebar = () => {
                 {token.change}
               </Badge>
             </div>
-          ))}
+          )) : (
+            <div className="text-center text-gray-400 py-4">
+              Loading prices...
+            </div>
+          )}
         </div>
       </Card>
 
       {/* Network Status */}
       <Card className="glass p-6">
         <h3 className="text-lg font-semibold text-white mb-4">Network Status</h3>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-gray-400">Block Height</span>
-            <span className="text-cyan-400 font-mono">18,891,234</span>
+        {networkData ? (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-gray-400">Block Height</span>
+              <span className="text-cyan-400 font-mono">{networkData.blockHeight.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-400">Gas Price</span>
+              <span className="text-cyan-400">{Math.round(networkData.gasPrice)} gwei</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-400">TPS</span>
+              <span className="text-green-400">{networkData.tps.toFixed(1)}</span>
+            </div>
+            <div className="w-full bg-gray-700 rounded-full h-2">
+              <div 
+                className="bg-gradient-to-r from-green-400 to-cyan-400 h-2 rounded-full transition-all duration-500" 
+                style={{ width: `${networkData.networkHealth}%` }}
+              ></div>
+            </div>
+            <span className="text-xs text-gray-400">
+              Network Health: {networkData.networkHealth > 85 ? 'Excellent' : networkData.networkHealth > 70 ? 'Good' : 'Fair'} ({Math.round(networkData.networkHealth)}%)
+            </span>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-gray-400">Gas Price</span>
-            <span className="text-cyan-400">42 gwei</span>
+        ) : (
+          <div className="text-center text-gray-400 py-4">
+            Loading network data...
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-gray-400">TPS</span>
-            <span className="text-green-400">14.2</span>
-          </div>
-          <div className="w-full bg-gray-700 rounded-full h-2">
-            <div className="bg-gradient-to-r from-green-400 to-cyan-400 h-2 rounded-full w-[72%]"></div>
-          </div>
-          <span className="text-xs text-gray-400">Network Health: Good</span>
-        </div>
+        )}
       </Card>
     </div>
   );

@@ -133,7 +133,7 @@ const NotificationSettings = () => {
               <Switch defaultChecked />
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-300">Large transactions (>$1000)</span>
+              <span className="text-sm text-gray-300">Large transactions (&gt;$1000)</span>
               <Switch />
             </div>
           </div>

@@ -45,12 +45,34 @@ const ChatInterface = () => {
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: 'ai',
-        content: 'I\'m analyzing the blockchain data for you. This is a demo response showing how the AI would provide insights about your query.',
+        content: getAIResponse(input),
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, aiMessage]);
       setIsTyping(false);
     }, 2000);
+  };
+
+  const getAIResponse = (query: string) => {
+    const lowercaseQuery = query.toLowerCase();
+    
+    if (lowercaseQuery.includes('analyze') && lowercaseQuery.includes('wallet')) {
+      return 'I can help you analyze any wallet! Please provide the wallet address you\'d like me to examine. I\'ll show you transaction history, token holdings, NFT collections, and DeFi positions.';
+    } else if (lowercaseQuery.includes('eth') && lowercaseQuery.includes('price')) {
+      return 'Current ETH price is $2,345.67 (+5.2% in 24h). The price has been trending upward with strong support at $2,300. Would you like me to analyze price predictions or historical data?';
+    } else if (lowercaseQuery.includes('defi') || lowercaseQuery.includes('trends')) {
+      return 'Latest DeFi trends show increased activity in liquid staking protocols and real-world asset tokenization. TVL has grown 15% this month, with Ethereum maintaining 60% dominance. Notable protocols include Lido, Aave, and Uniswap V4 preparations.';
+    } else if (lowercaseQuery.includes('gas')) {
+      return 'Current gas prices: Standard (32 gwei), Fast (45 gwei), Instant (60 gwei). Gas has been relatively stable today. Best time to transact is typically between 2-6 AM UTC for lower fees.';
+    } else {
+      return 'I\'m analyzing the blockchain data for you. Based on your query, I can provide insights about wallets, tokens, DeFi protocols, NFTs, and market trends. What specific aspect would you like me to focus on?';
+    }
+  };
+
+  const handleQuickAction = (action: string) => {
+    setInput(action);
+    // Automatically send the quick action
+    setTimeout(() => handleSend(), 100);
   };
 
   const quickActions = [
@@ -110,7 +132,7 @@ const ChatInterface = () => {
               key={action}
               variant="secondary"
               className="glass cursor-pointer hover:bg-white/20 transition-colors"
-              onClick={() => setInput(action)}
+              onClick={() => handleQuickAction(action)}
             >
               {action}
             </Badge>

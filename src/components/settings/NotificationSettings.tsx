@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -14,6 +13,22 @@ const NotificationSettings = () => {
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [priceAlerts, setPriceAlerts] = useState(true);
   const [transactionAlerts, setTransactionAlerts] = useState(true);
+
+  const handleManagePriceAlerts = () => {
+    // In a real app, this would open a modal or navigate to price alerts management
+    console.log('Managing price alerts...');
+  };
+
+  const handleSaveSettings = () => {
+    // In a real app, this would save settings to backend
+    console.log('Settings saved:', {
+      emailNotifications,
+      pushNotifications,
+      soundEnabled,
+      priceAlerts,
+      transactionAlerts
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -97,7 +112,10 @@ const NotificationSettings = () => {
             </div>
           </div>
           
-          <Button className="w-full gradient-primary text-white">
+          <Button 
+            className="w-full gradient-primary text-white"
+            onClick={handleManagePriceAlerts}
+          >
             Manage Price Alerts
           </Button>
         </div>
@@ -151,6 +169,16 @@ const NotificationSettings = () => {
           </div>
         </div>
       </Card>
+
+      {/* Save Settings Button */}
+      <div className="flex justify-end">
+        <Button 
+          className="gradient-primary text-white px-8"
+          onClick={handleSaveSettings}
+        >
+          Save Settings
+        </Button>
+      </div>
     </div>
   );
 };

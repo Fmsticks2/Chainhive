@@ -6,11 +6,26 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import NotificationList from './NotificationList';
 import NotificationFilters from './NotificationFilters';
-import { Bell, CheckCheck, Settings, Filter } from 'lucide-react';
+import { Bell, CheckCheck, Settings, Filter, Home, ArrowLeft } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Link, useNavigate } from 'react-router-dom';
 
 const NotificationCenter = () => {
   const [filter, setFilter] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const handleMarkAllRead = () => {
+    toast({
+      title: "Notifications Marked as Read",
+      description: "All notifications have been marked as read.",
+    });
+  };
+
+  const handleSettingsClick = () => {
+    navigate('/settings');
+  };
 
   return (
     <div className="space-y-6">
@@ -18,6 +33,12 @@ const NotificationCenter = () => {
       <Card className="glass p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
+            <Link to="/" className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" className="glass border-cyan-400/30 text-cyan-400">
+                <ArrowLeft className="w-4 h-4 mr-1" />
+                Home
+              </Button>
+            </Link>
             <h2 className="text-xl font-semibold text-white">Notification Center</h2>
             <Badge className="bg-cyan-500/20 text-cyan-400">
               12 unread
@@ -38,6 +59,7 @@ const NotificationCenter = () => {
               variant="outline" 
               size="sm" 
               className="glass border-green-400/30 text-green-400"
+              onClick={handleMarkAllRead}
             >
               <CheckCheck className="w-4 h-4 mr-1" />
               Mark All Read
@@ -46,6 +68,7 @@ const NotificationCenter = () => {
               variant="outline" 
               size="sm" 
               className="glass border-cyan-400/30 text-cyan-400"
+              onClick={handleSettingsClick}
             >
               <Settings className="w-4 h-4 mr-1" />
               Settings

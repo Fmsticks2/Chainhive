@@ -4,8 +4,11 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, TrendingDown, Wallet, Eye, Star } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const Sidebar = () => {
+  const { toast } = useToast();
+
   const trendingTokens = [
     { symbol: 'ETH', price: '$2,345.67', change: '+5.2%', positive: true },
     { symbol: 'BTC', price: '$43,210.00', change: '+2.1%', positive: true },
@@ -14,10 +17,47 @@ const Sidebar = () => {
   ];
 
   const quickActions = [
-    { title: 'Wallet Analyzer', desc: 'Deep dive into any wallet', icon: Wallet },
-    { title: 'Token Explorer', desc: 'Research tokens & contracts', icon: Eye },
-    { title: 'Portfolio Tracker', desc: 'Track your holdings', icon: Star },
+    { 
+      title: 'Wallet Analyzer', 
+      desc: 'Deep dive into any wallet', 
+      icon: Wallet,
+      action: () => {
+        toast({
+          title: "Wallet Analyzer",
+          description: "Enter a wallet address in the chat to analyze holdings and transaction history.",
+        });
+      }
+    },
+    { 
+      title: 'Token Explorer', 
+      desc: 'Research tokens & contracts', 
+      icon: Eye,
+      action: () => {
+        toast({
+          title: "Token Explorer",
+          description: "Ask me about any token or smart contract for detailed analysis.",
+        });
+      }
+    },
+    { 
+      title: 'Portfolio Tracker', 
+      desc: 'Track your holdings', 
+      icon: Star,
+      action: () => {
+        toast({
+          title: "Portfolio Tracker",
+          description: "Connect your wallet to track portfolio performance and get insights.",
+        });
+      }
+    },
   ];
+
+  const handleTokenClick = (token: any) => {
+    toast({
+      title: `${token.symbol} Info`,
+      description: `Current price: ${token.price} (${token.change})`,
+    });
+  };
 
   return (
     <div className="w-80 space-y-6 p-6">
@@ -30,6 +70,7 @@ const Sidebar = () => {
               key={action.title}
               variant="ghost"
               className="w-full justify-start glass hover:bg-white/10 p-4 h-auto"
+              onClick={action.action}
             >
               <action.icon className="w-5 h-5 mr-3 text-cyan-400" />
               <div className="text-left">
@@ -46,7 +87,11 @@ const Sidebar = () => {
         <h3 className="text-lg font-semibold text-white mb-4">Trending Tokens</h3>
         <div className="space-y-3">
           {trendingTokens.map((token) => (
-            <div key={token.symbol} className="flex items-center justify-between p-3 glass rounded-lg hover:bg-white/10 transition-colors cursor-pointer">
+            <div 
+              key={token.symbol} 
+              className="flex items-center justify-between p-3 glass rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+              onClick={() => handleTokenClick(token)}
+            >
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 rounded-full gradient-secondary flex items-center justify-center">
                   <span className="text-xs font-bold text-white">{token.symbol.charAt(0)}</span>

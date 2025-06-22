@@ -3,14 +3,17 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Wallet, Settings, Bell } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 
 const Header = () => {
+  const location = useLocation();
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/10">
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Logo and Brand */}
-          <div className="flex items-center space-x-3">
+          <Link to="/" className="flex items-center space-x-3">
             <div className="relative">
               <div className="w-10 h-10 rounded-lg gradient-primary flex items-center justify-center animate-pulse-glow">
                 <div className="w-6 h-6 bg-white rounded-sm opacity-90"></div>
@@ -20,7 +23,7 @@ const Header = () => {
               <h1 className="text-xl font-bold text-white">Web3 AI Assistant</h1>
               <p className="text-xs text-cyan-400">Powered by Nodit MCP</p>
             </div>
-          </div>
+          </Link>
 
           {/* Network Status */}
           <div className="flex items-center space-x-4">
@@ -42,12 +45,35 @@ const Header = () => {
 
             {/* Settings */}
             <div className="flex items-center space-x-2">
-              <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
-                <Bell className="w-5 h-5" />
-              </Button>
-              <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
-                <Settings className="w-5 h-5" />
-              </Button>
+              <Link to="/notifications">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className={`relative ${
+                    location.pathname === '/notifications' 
+                      ? 'text-cyan-400 bg-cyan-400/10' 
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <Bell className="w-5 h-5" />
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
+                    <span className="text-xs text-white">3</span>
+                  </div>
+                </Button>
+              </Link>
+              <Link to="/settings">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className={`${
+                    location.pathname === '/settings' 
+                      ? 'text-cyan-400 bg-cyan-400/10' 
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <Settings className="w-5 h-5" />
+                </Button>
+              </Link>
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Wallet, Settings, Bell } from 'lucide-react';
@@ -7,6 +7,47 @@ import { Link, useLocation } from 'react-router-dom';
 
 const Header = () => {
   const location = useLocation();
+  const [walletConnected, setWalletConnected] = useState(false);
+  const [walletAddress, setWalletAddress] = useState('');
+
+  // Check for wallet on component mount
+  useEffect(() => {
+    checkWalletConnection();
+  }, []);
+
+  const checkWalletConnection = async () => {
+    if (typeof window !== 'undefined' && window.ethereum) {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (accounts.length > 0) {
+          setWalletConnected(true);
+          setWalletAddress(accounts[0]);
+        }
+      } catch (error) {
+        console.log('Error checking wallet connection:', error);
+      }
+    }
+  };
+
+  const connectWallet = async () => {
+    if (typeof window !== 'undefined' && window.ethereum) {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        if (accounts.length > 0) {
+          setWalletConnected(true);
+          setWalletAddress(accounts[0]);
+        }
+      } catch (error) {
+        console.log('Error connecting wallet:', error);
+      }
+    } else {
+      alert('Please install MetaMask or another Ethereum wallet extension');
+    }
+  };
+
+  const formatAddress = (address: string) => {
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/10">
@@ -16,7 +57,11 @@ const Header = () => {
           <Link to="/" className="flex items-center space-x-3">
             <div className="relative">
               <div className="w-10 h-10 rounded-lg gradient-primary flex items-center justify-center animate-pulse-glow">
-                <div className="w-6 h-6 bg-white rounded-sm opacity-90"></div>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white">
+                  <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+                  <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+                  <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+                </svg>
               </div>
             </div>
             <div>
@@ -32,15 +77,23 @@ const Header = () => {
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                 <span className="text-sm text-gray-300">Ethereum</span>
                 <Badge variant="secondary" className="text-xs">
-                  Gas: 32 gwei
+                  Gas: 42 gwei
                 </Badge>
               </div>
             </div>
 
             {/* Wallet Connection */}
-            <Button variant="outline" className="glass border-cyan-400/30 hover:border-cyan-400/60 text-cyan-400">
+            <Button 
+              variant="outline" 
+              className={`glass ${
+                walletConnected 
+                  ? 'border-green-400/30 hover:border-green-400/60 text-green-400' 
+                  : 'border-cyan-400/30 hover:border-cyan-400/60 text-cyan-400'
+              }`}
+              onClick={connectWallet}
+            >
               <Wallet className="w-4 h-4 mr-2" />
-              Connect Wallet
+              {walletConnected ? formatAddress(walletAddress) : 'Connect Wallet'}
             </Button>
 
             {/* Settings */}

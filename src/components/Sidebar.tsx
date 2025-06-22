@@ -19,7 +19,7 @@ const Sidebar = () => {
   const quickActions = [
     { 
       title: 'Wallet Analyzer', 
-      desc: 'Deep dive into any wallet', 
+      desc: 'Analyze wallet holdings', 
       icon: Wallet,
       action: () => {
         toast({
@@ -30,7 +30,7 @@ const Sidebar = () => {
     },
     { 
       title: 'Token Explorer', 
-      desc: 'Research tokens & contracts', 
+      desc: 'Research tokens', 
       icon: Eye,
       action: () => {
         toast({
@@ -41,7 +41,7 @@ const Sidebar = () => {
     },
     { 
       title: 'Portfolio Tracker', 
-      desc: 'Track your holdings', 
+      desc: 'Track holdings', 
       icon: Star,
       action: () => {
         toast({
@@ -72,10 +72,10 @@ const Sidebar = () => {
               className="w-full justify-start glass hover:bg-white/10 p-4 h-auto"
               onClick={action.action}
             >
-              <action.icon className="w-5 h-5 mr-3 text-cyan-400" />
-              <div className="text-left">
-                <div className="font-medium text-white">{action.title}</div>
-                <div className="text-sm text-gray-400">{action.desc}</div>
+              <action.icon className="w-5 h-5 mr-3 text-cyan-400 flex-shrink-0" />
+              <div className="text-left min-w-0 flex-1">
+                <div className="font-medium text-white truncate">{action.title}</div>
+                <div className="text-sm text-gray-400 truncate">{action.desc}</div>
               </div>
             </Button>
           ))}
@@ -92,18 +92,18 @@ const Sidebar = () => {
               className="flex items-center justify-between p-3 glass rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
               onClick={() => handleTokenClick(token)}
             >
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 rounded-full gradient-secondary flex items-center justify-center">
+              <div className="flex items-center space-x-3 min-w-0 flex-1">
+                <div className="w-8 h-8 rounded-full gradient-secondary flex items-center justify-center flex-shrink-0">
                   <span className="text-xs font-bold text-white">{token.symbol.charAt(0)}</span>
                 </div>
-                <div>
+                <div className="min-w-0 flex-1">
                   <div className="font-medium text-white">{token.symbol}</div>
-                  <div className="text-sm text-gray-400">{token.price}</div>
+                  <div className="text-sm text-gray-400 truncate">{token.price}</div>
                 </div>
               </div>
               <Badge
                 variant={token.positive ? "default" : "destructive"}
-                className={`${
+                className={`flex-shrink-0 ${
                   token.positive 
                     ? 'bg-green-500/20 text-green-400 border-green-500/30' 
                     : 'bg-red-500/20 text-red-400 border-red-500/30'
@@ -131,7 +131,7 @@ const Sidebar = () => {
           </div>
           <div className="flex items-center justify-between">
             <span className="text-gray-400">Gas Price</span>
-            <span className="text-cyan-400">32 gwei</span>
+            <span className="text-cyan-400">42 gwei</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-gray-400">TPS</span>

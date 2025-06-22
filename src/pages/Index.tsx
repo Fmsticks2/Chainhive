@@ -1,11 +1,36 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React from 'react';
+import Header from '@/components/Header';
+import ChatInterface from '@/components/ChatInterface';
+import Sidebar from '@/components/Sidebar';
+import DataTicker from '@/components/DataTicker';
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      
+      <div className="flex-1 flex pt-20 pb-16">
+        {/* Main Chat Area */}
+        <div className="flex-1 flex">
+          <div className="flex-1 flex flex-col">
+            <ChatInterface />
+          </div>
+          
+          {/* Sidebar */}
+          <div className="hidden lg:block">
+            <Sidebar />
+          </div>
+        </div>
+      </div>
+      
+      <DataTicker />
+      
+      {/* Animated Background Elements */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-cyan-500/5 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-1/2 w-48 h-48 bg-blue-500/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
       </div>
     </div>
   );

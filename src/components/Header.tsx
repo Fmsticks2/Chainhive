@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Wallet, Settings, Bell } from 'lucide-react';
+import { Wallet, Settings, Bell, BarChart3 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 const Header = () => {
@@ -70,7 +70,32 @@ const Header = () => {
             </div>
           </Link>
 
-          {/* Network Status */}
+          {/* Navigation Menu */}
+          <nav className="hidden md:flex items-center space-x-6">
+            <Link 
+              to="/" 
+              className={`text-sm font-medium transition-colors ${
+                location.pathname === '/' 
+                  ? 'text-cyan-400' 
+                  : 'text-gray-300 hover:text-white'
+              }`}
+            >
+              Home
+            </Link>
+            <Link 
+              to="/portfolio" 
+              className={`text-sm font-medium transition-colors flex items-center gap-2 ${
+                location.pathname === '/portfolio' 
+                  ? 'text-cyan-400' 
+                  : 'text-gray-300 hover:text-white'
+              }`}
+            >
+              <BarChart3 className="w-4 h-4" />
+              Portfolio
+            </Link>
+          </nav>
+
+          {/* Network Status and Controls */}
           <div className="flex items-center space-x-4">
             <div className="glass px-3 py-2 rounded-lg">
               <div className="flex items-center space-x-2">

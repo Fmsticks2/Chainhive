@@ -4,19 +4,39 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Wallet, TrendingUp, TrendingDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Wallet, TrendingUp, TrendingDown, ArrowUp, ArrowDown, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import { MultiChainService, WalletPortfolio, TransactionData } from '@/services/multiChainService';
+import { NoditService, NoditTokenBalance, NoditTransaction } from '@/services/noditService';
 import ChainSelector from './ChainSelector';
+import { useToast } from '@/hooks/use-toast';
 
 const WalletAnalyzer = () => {
   const [walletAddress, setWalletAddress] = useState('');
   const [selectedChains, setSelectedChains] = useState(['ethereum']);
   const [portfolio, setPortfolio] = useState<WalletPortfolio | null>(null);
-  const [transactions, setTransactions] = useState<TransactionData[]>([]);
+  const [transactions, setTransactions] = useState<NoditTransaction[]>([]);
+  const [tokenBalances, setTokenBalances] = useState<NoditTokenBalance[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isValidAddress, setIsValidAddress] = useState<boolean | null>(null);
+  const { toast } = useToast();
 
   const multiChainService = MultiChainService.getInstance();
+  const noditService = NoditService.getInstance();
+
+  // Validate address in real-time
+  useEffect(() => {
+    if (!walletAddress.trim()) {
+      setIsValidAddress(null);
+      return;
+    }
+
+    const isValid = selectedChains.some(chain => 
+      multiChainService.isValidAddress(walletAddress, chain)
+    );
+    setIsValidAddress(isValid);
+  }, [walletAddress, selectedChains]);
 
   const handleAnalyze = async () => {
     if (!walletAddress.trim()) {
@@ -24,32 +44,67 @@ const WalletAnalyzer = () => {
       return;
     }
 
-    // Validate address for at least one selected chain
-    const isValidForAnyChain = selectedChains.some(chain => 
-      multiChainService.isValidAddress(walletAddress, chain)
-    );
-
-    if (!isValidForAnyChain) {
-      setError('Invalid wallet address for selected networks');
+    if (!isValidAddress) {
+      setError('Invalid wallet address format for selected networks');
       return;
     }
 
     setIsLoading(true);
     setError('');
+    setPortfolio(null);
+    setTransactions([]);
+    setTokenBalances([]);
 
     try {
+      console.log('Analyzing wallet:', walletAddress, 'on chains:', selectedChains);
+      
+      // Simulate checking if wallet exists and has activity
+      const walletExists = await checkWalletExists(walletAddress, selectedChains[0]);
+      
+      if (!walletExists) {
+        throw new Error('Wallet not found or has no transaction history');
+      }
+
+      // Get token balances using Nodit service
+      const balances = await noditService.getTokenBalances(walletAddress, selectedChains[0]);
+      setTokenBalances(balances);
+
+      // Get transaction history
+      const txHistory = await noditService.getTransactionHistory(walletAddress, selectedChains[0], 10);
+      setTransactions(txHistory);
+
+      // Get portfolio analysis
       const portfolioData = await multiChainService.analyzeWallet(walletAddress, selectedChains);
       setPortfolio(portfolioData);
 
-      // Get transactions from the first selected chain
-      const txData = await multiChainService.getTransactionHistory(walletAddress, selectedChains[0]);
-      setTransactions(txData);
-    } catch (err) {
-      setError('Failed to analyze wallet. Please try again.');
+      toast({
+        title: "Analysis Complete",
+        description: `Found ${balances.length} tokens and ${txHistory.length} recent transactions`,
+      });
+
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to analyze wallet. Please try again.';
+      setError(errorMessage);
+      toast({
+        title: "Analysis Failed",
+        description: errorMessage,
+        variant: "destructive"
+      });
       console.error('Wallet analysis error:', err);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const checkWalletExists = async (address: string, chain: string): Promise<boolean> => {
+    // Mock wallet existence check - in real implementation, this would call Nodit API
+    // Simulate some wallets not existing
+    const nonExistentAddresses = [
+      '0x0000000000000000000000000000000000000000',
+      '0x1111111111111111111111111111111111111111'
+    ];
+    
+    return !nonExistentAddresses.includes(address.toLowerCase());
   };
 
   const handleChainToggle = (chainId: string) => {
@@ -86,23 +141,55 @@ const WalletAnalyzer = () => {
         
         <div className="space-y-4">
           <div>
-            <Input
-              value={walletAddress}
-              onChange={(e) => setWalletAddress(e.target.value)}
-              placeholder="Enter wallet address (0x... or r...)"
-              className="bg-gray-800 border-gray-600 text-white"
-            />
+            <div className="relative">
+              <Input
+                value={walletAddress}
+                onChange={(e) => setWalletAddress(e.target.value)}
+                placeholder="Enter wallet address (0x... or r...)"
+                className="bg-gray-800 border-gray-600 text-white pr-10"
+              />
+              {walletAddress && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  {isValidAddress === true && (
+                    <CheckCircle className="w-5 h-5 text-green-400" />
+                  )}
+                  {isValidAddress === false && (
+                    <AlertCircle className="w-5 h-5 text-red-400" />
+                  )}
+                </div>
+              )}
+            </div>
+            
             {error && (
-              <p className="text-red-400 text-sm mt-1">{error}</p>
+              <Alert className="mt-2 border-red-500/20 bg-red-500/10">
+                <AlertCircle className="h-4 w-4 text-red-400" />
+                <AlertDescription className="text-red-400">{error}</AlertDescription>
+              </Alert>
+            )}
+            
+            {isValidAddress === false && walletAddress && (
+              <Alert className="mt-2 border-yellow-500/20 bg-yellow-500/10">
+                <AlertCircle className="h-4 w-4 text-yellow-400" />
+                <AlertDescription className="text-yellow-400">
+                  Address format is invalid for selected networks
+                </AlertDescription>
+              </Alert>
             )}
           </div>
           
           <Button
             onClick={handleAnalyze}
-            disabled={isLoading || selectedChains.length === 0}
+            disabled={isLoading || selectedChains.length === 0 || !isValidAddress}
             className="gradient-primary w-full"
           >
-            {isLoading ? 'Analyzing...' : 'Analyze Wallet'}
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Analyzing Wallet...
+              </>
+            ) : (
+              'Analyze Wallet'
+            )}
           </Button>
         </div>
       </Card>
@@ -112,6 +199,46 @@ const WalletAnalyzer = () => {
         selectedChains={selectedChains}
         onChainToggle={handleChainToggle}
       />
+
+      {/* Token Balances */}
+      {tokenBalances.length > 0 && (
+        <Card className="glass p-6">
+          <h3 className="text-lg font-semibold text-white mb-4">Token Balances</h3>
+          <div className="space-y-3">
+            {tokenBalances.map((token, index) => (
+              <div key={index} className="flex items-center justify-between glass p-3 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 flex items-center justify-center">
+                    <span className="text-xs font-bold text-white">
+                      {token.symbol.charAt(0)}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-white font-medium">{token.symbol}</p>
+                    <p className="text-gray-400 text-sm">{token.name}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-white font-medium">{formatCurrency(token.value_usd)}</p>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-gray-400 text-sm">{token.balance} {token.symbol}</span>
+                    <span className={`text-xs flex items-center ${
+                      token.change_24h >= 0 ? 'text-green-400' : 'text-red-400'
+                    }`}>
+                      {token.change_24h >= 0 ? (
+                        <TrendingUp className="w-3 h-3 mr-1" />
+                      ) : (
+                        <TrendingDown className="w-3 h-3 mr-1" />
+                      )}
+                      {token.change_24h.toFixed(2)}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
 
       {/* Portfolio Overview */}
       {portfolio && (
@@ -195,16 +322,19 @@ const WalletAnalyzer = () => {
               <div key={index} className="flex items-center justify-between glass p-3 rounded-lg">
                 <div className="flex items-center space-x-3">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    tx.type === 'receive' ? 'bg-green-500/20' : 'bg-red-500/20'
+                    tx.from_address.toLowerCase() === walletAddress.toLowerCase() 
+                      ? 'bg-red-500/20' : 'bg-green-500/20'
                   }`}>
-                    {tx.type === 'receive' ? (
-                      <ArrowDown className="w-4 h-4 text-green-400" />
-                    ) : (
+                    {tx.from_address.toLowerCase() === walletAddress.toLowerCase() ? (
                       <ArrowUp className="w-4 h-4 text-red-400" />
+                    ) : (
+                      <ArrowDown className="w-4 h-4 text-green-400" />
                     )}
                   </div>
                   <div>
-                    <p className="text-white font-medium capitalize">{tx.type}</p>
+                    <p className="text-white font-medium capitalize">
+                      {tx.from_address.toLowerCase() === walletAddress.toLowerCase() ? 'Sent' : 'Received'}
+                    </p>
                     <p className="text-gray-400 text-sm">{formatAddress(tx.hash)}</p>
                   </div>
                 </div>

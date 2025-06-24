@@ -1,4 +1,3 @@
-
 export interface VoiceCommand {
   transcript: string;
   confidence: number;
@@ -13,7 +12,7 @@ export interface VoiceCommand {
 
 export class VoiceService {
   private static instance: VoiceService;
-  private recognition: SpeechRecognition | null = null;
+  private recognition: any = null;
   private isListening = false;
   private subscribers: ((command: VoiceCommand) => void)[] = [];
 
@@ -30,14 +29,14 @@ export class VoiceService {
 
   private initializeSpeechRecognition(): void {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       this.recognition = new SpeechRecognition();
       
       this.recognition.continuous = false;
       this.recognition.interimResults = false;
       this.recognition.lang = 'en-US';
 
-      this.recognition.onresult = (event) => {
+      this.recognition.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
         const confidence = event.results[0][0].confidence;
         
@@ -49,7 +48,7 @@ export class VoiceService {
         this.isListening = false;
       };
 
-      this.recognition.onerror = (event) => {
+      this.recognition.onerror = (event: any) => {
         console.error('Speech recognition error:', event.error);
         this.isListening = false;
       };

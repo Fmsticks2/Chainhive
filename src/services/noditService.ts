@@ -168,7 +168,7 @@ export class NoditService {
         gas_used: '21000',
         gas_price: '20000000000',
         timestamp: new Date(Date.now() - 3600000).toISOString(),
-        status: 'success',
+        status: 'success' as const,
         method: 'transfer'
       }
     ].slice(0, limit);

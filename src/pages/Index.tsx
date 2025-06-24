@@ -73,7 +73,7 @@ const Index = () => {
     }
 
     telegramService.setBotToken(telegramBotToken);
-    const success = await telegramService.sendMessage(telegramChatId, "🤖 Web3 AI Assistant connected successfully!");
+    const success = await telegramService.sendMessage(Number(telegramChatId), "🤖 Web3 AI Assistant connected successfully!");
     
     if (success) {
       toast({

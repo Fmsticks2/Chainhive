@@ -7,12 +7,7 @@ import DataTicker from '@/components/DataTicker';
 import WalletAnalyzer from '@/components/WalletAnalyzer';
 
 const Index = () => {
-  const [show
-
-  
-    
-  
-  WalletAnalyzer, setShowWalletAnalyzer] = useState(false);
+  const [showWalletAnalyzer, setShowWalletAnalyzer] = useState(false);
 
   const handleWalletAnalyzerToggle = () => {
     setShowWalletAnalyzer(!showWalletAnalyzer);

@@ -1,25 +1,46 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import Header from '@/components/Header';
 import ChatInterface from '@/components/ChatInterface';
 import Sidebar from '@/components/Sidebar';
 import DataTicker from '@/components/DataTicker';
+import WalletAnalyzer from '@/components/WalletAnalyzer';
 
 const Index = () => {
+  const [show
+
+  
+    
+  
+  WalletAnalyzer, setShowWalletAnalyzer] = useState(false);
+
+  const handleWalletAnalyzerToggle = () => {
+    setShowWalletAnalyzer(!showWalletAnalyzer);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       
       <div className="flex-1 flex pt-20 pb-16">
-        {/* Main Chat Area */}
+        {/* Main Content Area */}
         <div className="flex-1 flex">
           <div className="flex-1 flex flex-col">
-            <ChatInterface />
+            {showWalletAnalyzer ? (
+              <div className="p-6">
+                <WalletAnalyzer />
+              </div>
+            ) : (
+              <ChatInterface />
+            )}
           </div>
           
           {/* Sidebar */}
           <div className="hidden lg:block">
-            <Sidebar />
+            <Sidebar 
+              onWalletAnalyzerToggle={handleWalletAnalyzerToggle}
+              showWalletAnalyzer={showWalletAnalyzer}
+            />
           </div>
         </div>
       </div>

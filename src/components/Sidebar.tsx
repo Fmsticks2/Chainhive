@@ -3,11 +3,16 @@ import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, TrendingDown, Wallet, Eye, Star } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, Eye, Star, BarChart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { CryptoService, TokenData } from '@/services/cryptoService';
 
-const Sidebar = () => {
+interface SidebarProps {
+  onWalletAnalyzerToggle?: () => void;
+  showWalletAnalyzer?: boolean;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ onWalletAnalyzerToggle, showWalletAnalyzer = false }) => {
   const { toast } = useToast();
   const [trendingTokens, setTrendingTokens] = useState<any[]>([]);
   const [networkData, setNetworkData] = useState<any>(null);
@@ -34,12 +39,27 @@ const Sidebar = () => {
     };
 
     updateData();
-    const interval = setInterval(updateData, 30000); // Update every 30 seconds
+    const interval = setInterval(updateData, 30000);
 
     return () => clearInterval(interval);
   }, []);
 
   const quickActions = [
+    { 
+      title: 'Multi-Chain Analyzer', 
+      desc: 'Analyze wallets across chains', 
+      icon: BarChart,
+      action: () => {
+        if (onWalletAnalyzerToggle) {
+          onWalletAnalyzerToggle();
+        } else {
+          toast({
+            title: "Multi-Chain Analyzer",
+            description: "Enter a wallet address to analyze holdings across multiple blockchains.",
+          });
+        }
+      }
+    },
     { 
       title: 'Wallet Analyzer', 
       desc: 'Analyze wallet holdings', 
@@ -92,7 +112,11 @@ const Sidebar = () => {
             <Button
               key={action.title}
               variant="ghost"
-              className="w-full justify-start glass hover:bg-white/10 p-4 h-auto"
+              className={`w-full justify-start glass hover:bg-white/10 p-4 h-auto ${
+                action.title === 'Multi-Chain Analyzer' && showWalletAnalyzer 
+                  ? 'bg-cyan-500/20 border-cyan-500/50' 
+                  : ''
+              }`}
               onClick={action.action}
             >
               <action.icon className="w-5 h-5 mr-3 text-cyan-400 flex-shrink-0" />
@@ -105,7 +129,7 @@ const Sidebar = () => {
         </div>
       </Card>
 
-      {/* Trending Tokens */}
+      {/* Live Prices */}
       <Card className="glass p-6">
         <h3 className="text-lg font-semibold text-white mb-4">Live Prices</h3>
         <div className="space-y-3">

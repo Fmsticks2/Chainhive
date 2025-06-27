@@ -127,22 +127,9 @@ src/
 └── types/              # TypeScript type definitions
 ```
 
-## 🚀 Deployment
 
-### Deploy with Lovable
-1. Open your [Lovable Project](https://lovable.dev/projects/4533b4be-edc1-40bc-bdb8-88aa03a24e9a)
-2. Click Share → Publish
-3. Your app will be live at `https://chainhive.lovable.app`
 
-### Custom Domain
-Connect your own domain in Project Settings → Domains (requires paid plan)
 
-### Self-Hosting
-The project generates standard web application code that can be deployed on any static hosting platform:
-- Vercel
-- Netlify
-- AWS S3 + CloudFront
-- GitHub Pages
 
 ## 🤝 Contributing
 
@@ -152,12 +139,3 @@ We welcome contributions! Please feel free to submit issues and pull requests.
 
 This project is licensed under the MIT License.
 
-## 🔗 Links
-
-- **Live Demo**: [ChainHive on Lovable](https://lovable.dev/projects/4533b4be-edc1-40bc-bdb8-88aa03a24e9a)
-- **Documentation**: [Lovable Docs](https://docs.lovable.dev/)
-- **Community**: [Discord](https://discord.com/channels/1119885301872070706/1280461670979993613)
-
----
-
-Built with ❤️ using [Lovable](https://lovable.dev) - The AI-powered web development platform

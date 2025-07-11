@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MessageCircle, Wallet, TrendingUp, Bot, Send, Users } from 'lucide-react';
 import { VoiceService, VoiceCommand } from '@/services/voiceService';
 import { TelegramService } from '@/services/telegramService';
+import Web3Integration from '@/components/Web3Integration';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
@@ -182,7 +183,7 @@ const Index = () => {
 
             {/* Main Content Tabs */}
             <Tabs defaultValue="chat" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 glass-strong mb-12 p-2 h-auto">
+              <TabsList className="grid w-full grid-cols-5 glass-strong mb-12 p-2 h-auto">
                 <TabsTrigger 
                   value="chat" 
                   className="flex items-center gap-3 px-6 py-4 text-base font-medium transition-all duration-300 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-lg"
@@ -211,15 +212,23 @@ const Index = () => {
                   <Users className="w-5 h-5" />
                   Farcaster
                 </TabsTrigger>
-              </TabsList>
+              <TabsTrigger value="web3" className="flex items-center gap-3 px-6 py-4 text-base font-medium transition-all duration-300 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-lg">
+                <Wallet className="w-5 h-5" />
+                Web3
+              </TabsTrigger>
+            </TabsList>
 
-              <TabsContent value="chat">
-                <ChatInterface />
-              </TabsContent>
+            <TabsContent value="chat">
+              <ChatInterface />
+            </TabsContent>
 
-              <TabsContent value="analyzer">
-                <WalletAnalyzer />
-              </TabsContent>
+            <TabsContent value="analyzer">
+              <WalletAnalyzer />
+            </TabsContent>
+
+            <TabsContent value="web3">
+              <Web3Integration />
+            </TabsContent>
 
               <TabsContent value="telegram">
                 <Card className="glass p-6">

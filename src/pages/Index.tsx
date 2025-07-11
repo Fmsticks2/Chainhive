@@ -114,49 +114,101 @@ const Index = () => {
         <div className="container mx-auto px-6 py-8">
           <div className="max-w-7xl mx-auto">
             {/* Hero Section */}
-            <div className="text-center mb-12">
-              <h1 className="text-5xl font-bold text-white mb-4 animate-fade-in">
-                Web3 AI Assistant
-              </h1>
-              <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
-                Your intelligent companion for blockchain analysis, portfolio management, and Web3 insights powered by Nodit MCP
-              </p>
+            <div className="text-center mb-16 relative">
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-96 h-96 bg-gradient-to-r from-primary/20 to-accent/20 rounded-full blur-3xl animate-pulse-glow"></div>
+              </div>
               
-              {/* Voice Control */}
-              <div className="flex items-center justify-center gap-4 mb-8">
+              <div className="relative z-10">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-subtle mb-6 text-sm font-medium">
+                  <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+                  Powered by Nodit Infrastructure
+                </div>
+                
+                <h1 className="text-6xl lg:text-7xl font-bold mb-6 animate-fade-in">
+                  <span className="text-gradient">ChainHive</span>
+                </h1>
+                
+                <h2 className="text-2xl lg:text-3xl font-semibold text-muted-foreground mb-8">
+                  Web3 AI Assistant
+                </h2>
+                
+                <p className="text-xl text-muted-foreground mb-12 max-w-4xl mx-auto leading-relaxed">
+                  Your intelligent companion for blockchain analysis, portfolio management, and Web3 insights. 
+                  Built on cutting-edge AI technology with multi-chain support and advanced analytics.
+                </p>
+                
+                <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-lg glass-subtle">
+                    <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-medium">Multi-Chain Support</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-lg glass-subtle">
+                    <div className="w-3 h-3 bg-blue-400 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-medium">AI-Powered Analysis</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-lg glass-subtle">
+                    <div className="w-3 h-3 bg-purple-400 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-medium">Real-time Alerts</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Voice Control */}
+            <div className="flex items-center justify-center gap-6 mb-12">
                 <Button
                   onClick={toggleVoiceListening}
-                  className={`${isListening ? 'bg-red-500 hover:bg-red-600' : 'gradient-primary'} px-6 py-3`}
+                  size="xl"
+                  variant={isListening ? 'destructive' : 'gradient'}
                   disabled={!voiceService.isSupported()}
                 >
-                  <Bot className="w-5 h-5 mr-2" />
+                  <Bot className="w-6 h-6 mr-3" />
                   {isListening ? 'Stop Listening' : 'Voice Control'}
                 </Button>
+                
                 {isListening && (
-                  <Badge variant="secondary" className="animate-pulse bg-red-500/20 text-red-400">
-                    🎤 Listening...
-                  </Badge>
+                  <div className="flex items-center gap-3 px-6 py-3 rounded-full glass-strong animate-pulse-glow">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-6 bg-destructive rounded-full animate-pulse"></div>
+                      <div className="w-2 h-4 bg-destructive/70 rounded-full animate-pulse" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-8 bg-destructive rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="w-2 h-3 bg-destructive/70 rounded-full animate-pulse" style={{ animationDelay: '0.3s' }}></div>
+                    </div>
+                    <span className="text-lg font-medium text-destructive">Listening...</span>
+                  </div>
                 )}
-              </div>
             </div>
 
             {/* Main Content Tabs */}
             <Tabs defaultValue="chat" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 glass mb-8">
-                <TabsTrigger value="chat" className="flex items-center gap-2">
-                  <MessageCircle className="w-4 h-4" />
+              <TabsList className="grid w-full grid-cols-4 glass-strong mb-12 p-2 h-auto">
+                <TabsTrigger 
+                  value="chat" 
+                  className="flex items-center gap-3 px-6 py-4 text-base font-medium transition-all duration-300 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-lg"
+                >
+                  <MessageCircle className="w-5 h-5" />
                   AI Chat
                 </TabsTrigger>
-                <TabsTrigger value="analyzer" className="flex items-center gap-2">
-                  <Wallet className="w-4 h-4" />
+                <TabsTrigger 
+                  value="analyzer" 
+                  className="flex items-center gap-3 px-6 py-4 text-base font-medium transition-all duration-300 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-lg"
+                >
+                  <Wallet className="w-5 h-5" />
                   Wallet Analyzer
                 </TabsTrigger>
-                <TabsTrigger value="telegram" className="flex items-center gap-2">
-                  <Send className="w-4 h-4" />
+                <TabsTrigger 
+                  value="telegram" 
+                  className="flex items-center gap-3 px-6 py-4 text-base font-medium transition-all duration-300 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-lg"
+                >
+                  <Send className="w-5 h-5" />
                   Telegram
                 </TabsTrigger>
-                <TabsTrigger value="farcaster" className="flex items-center gap-2">
-                  <Users className="w-4 h-4" />
+                <TabsTrigger 
+                  value="farcaster" 
+                  className="flex items-center gap-3 px-6 py-4 text-base font-medium transition-all duration-300 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-lg"
+                >
+                  <Users className="w-5 h-5" />
                   Farcaster
                 </TabsTrigger>
               </TabsList>
@@ -205,7 +257,7 @@ const Index = () => {
                       />
                     </div>
                     
-                    <Button onClick={setupTelegramBot} className="gradient-primary w-full">
+                    <Button onClick={setupTelegramBot} variant="gradient" className="w-full">
                       Connect Telegram Bot
                     </Button>
                   </div>
@@ -247,7 +299,7 @@ const Index = () => {
                       />
                     </div>
                     
-                    <Button onClick={testFarcasterIntegration} className="gradient-primary w-full">
+                    <Button onClick={testFarcasterIntegration} variant="gradient" className="w-full">
                       Connect Farcaster
                     </Button>
                   </div>
@@ -270,11 +322,31 @@ const Index = () => {
       
       <DataTicker />
       
-      {/* Animated Background Elements */}
+      {/* Enhanced Animated Background Elements */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-cyan-500/5 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-1/2 w-48 h-48 bg-blue-500/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+        {/* Floating orbs */}
+        <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-secondary/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '4s' }}></div>
+        <div className="absolute top-1/6 right-1/3 w-48 h-48 bg-primary/8 rounded-full blur-2xl animate-float" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-accent/8 rounded-full blur-3xl animate-float" style={{ animationDelay: '3s' }}></div>
+        
+        {/* Grid pattern */}
+        <div 
+          className="absolute inset-0 opacity-[0.02] animate-grid-move"
+          style={{
+            backgroundImage: `
+              linear-gradient(rgba(0, 210, 255, 0.3) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(0, 210, 255, 0.3) 1px, transparent 1px)
+            `,
+            backgroundSize: '50px 50px'
+          }}
+        ></div>
+        
+        {/* Geometric shapes */}
+        <div className="absolute top-1/3 right-1/6 w-4 h-4 border border-primary/30 rotate-45 animate-float" style={{ animationDelay: '0.5s' }}></div>
+        <div className="absolute bottom-1/3 left-1/6 w-6 h-6 border border-accent/30 rounded-full animate-float" style={{ animationDelay: '1.5s' }}></div>
+        <div className="absolute top-2/3 right-1/3 w-3 h-8 bg-primary/20 rounded-full animate-float" style={{ animationDelay: '2.5s' }}></div>
       </div>
     </div>
   );

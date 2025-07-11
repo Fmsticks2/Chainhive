@@ -7,6 +7,7 @@ import "../ChainHive.sol";
 import "../ChainHiveMultiChain.sol";
 import "../ChainHiveGovernance.sol";
 import "@openzeppelin/contracts/governance/TimelockController.sol";
+import "@openzeppelin/contracts/interfaces/IERC5805.sol";
 
 /**
  * @title DeployScript
@@ -15,7 +16,18 @@ import "@openzeppelin/contracts/governance/TimelockController.sol";
 contract DeployScript is Script {
     
     function run() external {
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        string memory privateKeyStr = vm.envString("PRIVATE_KEY");
+        uint256 deployerPrivateKey;
+        
+        // Handle private key with or without 0x prefix
+        if (bytes(privateKeyStr).length == 64) {
+            // No 0x prefix, add it
+            deployerPrivateKey = vm.parseUint(string.concat("0x", privateKeyStr));
+        } else {
+            // Has 0x prefix or other format
+            deployerPrivateKey = vm.parseUint(privateKeyStr);
+        }
+        
         address deployer = vm.addr(deployerPrivateKey);
         
         vm.startBroadcast(deployerPrivateKey);
@@ -48,7 +60,7 @@ contract DeployScript is Script {
         
         // 5. Deploy Governance
         ChainHiveGovernance governance = new ChainHiveGovernance(
-            IVotes(address(token)),
+            IERC5805(address(token)),
             timelock
         );
         console.log("ChainHiveGovernance deployed at:", address(governance));
@@ -107,6 +119,7 @@ contract DeployScript is Script {
         if (chainId == 43114) return "avalanche";
         if (chainId == 42161) return "arbitrum";
         if (chainId == 10) return "optimism";
+        if (chainId == 1001) return "kairos";
         if (chainId == 31337) return "localhost";
         return "unknown";
     }

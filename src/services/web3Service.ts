@@ -108,6 +108,19 @@ export class Web3Service {
         governance: '0x...' // Update with deployed address
       }
     },
+    1001: { // Kairos Network Testnet
+      chainId: 1001,
+      name: 'Kairos Network',
+      symbol: 'KAI',
+      rpcUrl: 'https://public-en-kairos.node.kaia.io',
+      explorerUrl: 'https://kairoscan.io',
+      contracts: {
+        chainHive: process.env.VITE_CHAINHIVE_CONTRACT_ADDRESS || '0x...',
+        token: process.env.VITE_CHAINHIVE_TOKEN_ADDRESS || '0x...',
+        multiChain: process.env.VITE_CHAINHIVE_MULTICHAIN_ADDRESS || '0x...',
+        governance: process.env.VITE_CHAINHIVE_GOVERNANCE_ADDRESS || '0x...'
+      }
+    },
     // Add more chains as needed
   };
 

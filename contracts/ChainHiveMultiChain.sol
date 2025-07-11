@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title ChainHiveMultiChain
@@ -46,7 +46,7 @@ contract ChainHiveMultiChain is Ownable, ReentrancyGuard {
         _;
     }
     
-    constructor() {
+    constructor() Ownable(msg.sender) {
         // Initialize with common chains
         _addChain(1, address(0), true); // Ethereum
         _addChain(137, address(0), true); // Polygon

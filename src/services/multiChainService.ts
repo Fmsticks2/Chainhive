@@ -68,6 +68,14 @@ export const SUPPORTED_CHAINS: ChainConfig[] = [
     icon: '●'
   },
   {
+    id: 'kairos',
+    name: 'Kairos Network',
+    symbol: 'KAI',
+    rpcUrl: 'https://public-en-kairos.node.kaia.io',
+    explorerUrl: 'https://kairoscan.io',
+    icon: '🔗'
+  },
+  {
     id: 'aptos',
     name: 'Aptos',
     symbol: 'APT',

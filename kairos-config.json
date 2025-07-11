@@ -1,0 +1,105 @@
+{
+  "network": {
+    "name": "Kairos Network",
+    "chainId": 1001,
+    "symbol": "KAI",
+    "rpcUrl": "https://public-en-kairos.node.kaia.io",
+    "explorerUrl": "https://kairoscan.io",
+    "faucetUrl": "https://faucet.kaichain.net",
+    "isTestnet": true
+  },
+  "deployment": {
+    "deployer": "0x5CbD1ABe5029c5c717038f86C31B706f027640AB",
+    "deploymentDate": null,
+    "gasUsed": null,
+    "contracts": {
+      "ChainHiveToken": {
+        "address": "",
+        "deploymentTx": "",
+        "verified": false
+      },
+      "ChainHive": {
+        "address": "",
+        "deploymentTx": "",
+        "verified": false
+      },
+      "ChainHiveMultiChain": {
+        "address": "",
+        "deploymentTx": "",
+        "verified": false
+      },
+      "ChainHiveGovernance": {
+        "address": "",
+        "deploymentTx": "",
+        "verified": false
+      },
+      "TimelockController": {
+        "address": "",
+        "deploymentTx": "",
+        "verified": false
+      }
+    }
+  },
+  "features": {
+    "noditMCP": {
+      "enabled": true,
+      "apiEndpoint": "https://api.nodit.io/v1",
+      "supportedChains": ["kairos"],
+      "mcpAnalysis": true,
+      "crossChainData": true
+    },
+    "kairosSpecific": {
+      "nativeStaking": true,
+      "crossChainBridge": true,
+      "governanceIntegration": true,
+      "defiProtocols": [
+        "KairosSwap",
+        "KairosLend",
+        "KairosStake"
+      ]
+    },
+    "smartContractFeatures": {
+      "portfolioTracking": true,
+      "aiInsights": true,
+      "alertSystem": true,
+      "rewardSystem": true,
+      "subscriptionTiers": true,
+      "governance": true
+    }
+  },
+  "integration": {
+    "walletConnect": {
+      "projectId": "",
+      "supportedWallets": ["MetaMask", "WalletConnect", "Coinbase Wallet"]
+    },
+    "ipfs": {
+      "gateway": "https://ipfs.io/ipfs/",
+      "pinningService": "pinata"
+    },
+    "oracles": {
+      "priceFeeds": "chainlink",
+      "kairosNativeOracles": true
+    }
+  },
+  "security": {
+    "multisig": false,
+    "timelock": true,
+    "pausable": true,
+    "upgradeable": false,
+    "accessControl": true
+  },
+  "monitoring": {
+    "eventListeners": [
+      "UserRegistered",
+      "PortfolioAnalyzed",
+      "AIInsightGenerated",
+      "AlertCreated",
+      "AlertTriggered"
+    ],
+    "metrics": {
+      "totalUsers": 0,
+      "totalAnalyses": 0,
+      "totalRewardsDistributed": 0
+    }
+  }
+}

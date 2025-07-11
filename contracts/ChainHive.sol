@@ -2,8 +2,8 @@
 pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
@@ -87,7 +87,7 @@ contract ChainHive is Ownable, ReentrancyGuard, Pausable {
         _;
     }
     
-    constructor(address _rewardToken) {
+    constructor(address _rewardToken) Ownable(msg.sender) {
         rewardToken = _rewardToken;
     }
     

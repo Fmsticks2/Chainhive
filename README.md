@@ -3,6 +3,8 @@
 
 **ChainHive** is an intelligent Web3 companion that provides AI-powered blockchain analysis, portfolio management, and DeFi insights. Built with cutting-edge AI technology and powered by Nodit MCP, ChainHive helps users navigate the complex world of decentralized finance with ease.
 
+🌐 **Now with Kairos Network Integration!** - Deploy smart contracts on Kairos Network for enhanced cross-chain functionality and native blockchain features.
+
 ## 🚀 Features
 
 ### 🤖 AI-Powered Chat Interface
@@ -46,6 +48,8 @@ This project leverages modern web technologies and blockchain infrastructure:
 - **Build Tool**: Vite for fast development and building
 - **Data Fetching**: TanStack Query for efficient data management
 - **Blockchain**: Nodit MCP for multi-chain data access
+- **Smart Contracts**: Solidity 0.8.19 with Foundry framework
+- **Networks**: Ethereum, Polygon, BSC, Kairos Network
 - **Routing**: React Router for navigation
 - **Charts**: Recharts for data visualization
 - **Icons**: Lucide React for consistent iconography
@@ -83,6 +87,48 @@ npm run dev
    - Nodit API key for blockchain data
    - Telegram bot token for notifications
    - Farcaster API key for social features
+
+## 🔗 Smart Contract Deployment (Kairos Network)
+
+ChainHive includes a complete smart contract backend that can be deployed on Kairos Network for enhanced functionality.
+
+### Quick Deployment
+
+**Prerequisites:**
+- Foundry installed (`curl -L https://foundry.paradigm.xyz | bash && foundryup`)
+- KAI tokens in your wallet for gas fees
+- Wallet configured for Kairos Network
+
+**Deploy to Kairos Network:**
+```powershell
+# Windows (PowerShell)
+.\deploy-kairos.ps1
+```
+
+```bash
+# Linux/Mac
+chmod +x deploy-kairos.sh
+./deploy-kairos.sh
+```
+
+### Smart Contract Features
+- **User Profiles**: On-chain user registration and profile management
+- **Portfolio Tracking**: Blockchain-based portfolio analysis storage
+- **AI Insights**: Decentralized AI insight storage with IPFS
+- **Alert System**: Smart contract-based notification system
+- **Reward System**: Token-based rewards for platform usage
+- **Governance**: DAO governance with voting and proposals
+- **Multi-chain Bridge**: Cross-chain asset and data bridging
+
+### Deployed Contracts
+After deployment, you'll have:
+- `ChainHive.sol` - Main platform contract
+- `ChainHiveToken.sol` - Platform utility token (CHT)
+- `ChainHiveMultiChain.sol` - Cross-chain bridge
+- `ChainHiveGovernance.sol` - DAO governance
+- `TimelockController.sol` - Governance timelock
+
+📖 **Detailed deployment guide**: See [KAIROS_DEPLOYMENT.md](./KAIROS_DEPLOYMENT.md)
 
 ## 📱 Usage
 

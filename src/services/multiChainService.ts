@@ -47,7 +47,7 @@ export const SUPPORTED_CHAINS: ChainConfig[] = [
     id: 'ethereum',
     name: 'Ethereum',
     symbol: 'ETH',
-    rpcUrl: process.env.NODIT_API_KEY ? `https://eth-mainnet.nodit.io/${process.env.NODIT_API_KEY}` : 'https://ethereum.publicnode.com',
+    rpcUrl: process.env.NODIT_API_KEY ? 'https://web3.nodit.io/v1/eth/mainnet' : 'https://eth.llamarpc.com',
     explorerUrl: 'https://etherscan.io',
     icon: '⟠'
   },
@@ -55,7 +55,7 @@ export const SUPPORTED_CHAINS: ChainConfig[] = [
     id: 'polygon',
     name: 'Polygon',
     symbol: 'MATIC',
-    rpcUrl: process.env.NODIT_API_KEY ? `https://polygon-mainnet.nodit.io/${process.env.NODIT_API_KEY}` : 'https://polygon.llamarpc.com',
+    rpcUrl: process.env.NODIT_API_KEY ? 'https://web3.nodit.io/v1/polygon/mainnet' : 'https://polygon-rpc.com',
     explorerUrl: 'https://polygonscan.com',
     icon: '⬟'
   },
@@ -63,15 +63,15 @@ export const SUPPORTED_CHAINS: ChainConfig[] = [
     id: 'bsc',
     name: 'BNB Smart Chain',
     symbol: 'BNB',
-    rpcUrl: process.env.NODIT_API_KEY ? `https://bsc-mainnet.nodit.io/${process.env.NODIT_API_KEY}` : 'https://bsc.llamarpc.com',
+    rpcUrl: process.env.NODIT_API_KEY ? 'https://web3.nodit.io/v1/bsc/mainnet' : 'https://bsc-dataseed1.defibit.io',
     explorerUrl: 'https://bscscan.com',
     icon: '●'
   },
   {
-    chainId: 1001,
+    id: 'kairos',
     name: 'Kairos Network',
     symbol: 'KAI',
-    rpcUrl: process.env.NODIT_API_KEY ? `https://kaia-kairos.nodit.io/${process.env.NODIT_API_KEY}` : 'https://public-en-kairos.node.kaia.io',
+    rpcUrl: process.env.NODIT_KAIROS_RPC_URL || 'https://public-en-kairos.node.kaia.io',
     explorerUrl: 'https://kairoscan.io',
     icon: '🔗'
   },
@@ -92,6 +92,10 @@ export const SUPPORTED_CHAINS: ChainConfig[] = [
     icon: 'X'
   }
 ];
+
+export const createProvider = (rpcUrl: string): JsonRpcProvider => {
+  return new JsonRpcProvider(rpcUrl);
+};
 
 export class MultiChainService {
   private static instance: MultiChainService;

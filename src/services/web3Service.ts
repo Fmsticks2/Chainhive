@@ -86,7 +86,7 @@ export class Web3Service {
       chainId: 1,
       name: 'Ethereum',
       symbol: 'ETH',
-      rpcUrl: process.env.NODIT_API_KEY ? `https://eth-mainnet.nodit.io/${process.env.NODIT_API_KEY}` : 'https://ethereum.publicnode.com',
+      rpcUrl: process.env.NODIT_API_KEY ? 'https://web3.nodit.io/v1/eth/mainnet' : 'https://eth.llamarpc.com',
       explorerUrl: 'https://etherscan.io',
       contracts: {
         chainHive: '0x...', // Update with deployed address
@@ -99,8 +99,21 @@ export class Web3Service {
       chainId: 137,
       name: 'Polygon',
       symbol: 'MATIC',
-      rpcUrl: process.env.NODIT_API_KEY ? `https://polygon-mainnet.nodit.io/${process.env.NODIT_API_KEY}` : 'https://polygon.llamarpc.com',
+      rpcUrl: process.env.NODIT_API_KEY ? 'https://web3.nodit.io/v1/polygon/mainnet' : 'https://polygon-rpc.com',
       explorerUrl: 'https://polygonscan.com',
+      contracts: {
+        chainHive: '0x...', // Update with deployed address
+        token: '0x...', // Update with deployed address
+        multiChain: '0x...', // Update with deployed address
+        governance: '0x...' // Update with deployed address
+      }
+    },
+    56: { // BSC Mainnet
+      chainId: 56,
+      name: 'BNB Smart Chain',
+      symbol: 'BNB',
+      rpcUrl: process.env.NODIT_API_KEY ? 'https://web3.nodit.io/v1/bsc/mainnet' : 'https://bsc-dataseed1.defibit.io',
+      explorerUrl: 'https://bscscan.com',
       contracts: {
         chainHive: '0x...', // Update with deployed address
         token: '0x...', // Update with deployed address
@@ -112,7 +125,7 @@ export class Web3Service {
       chainId: 1001,
       name: 'Kairos',
       symbol: 'KAI',
-      rpcUrl: process.env.NODIT_API_KEY ? `https://kaia-kairos.nodit.io/${process.env.NODIT_API_KEY}` : (process.env.KAIROS_RPC_URL || 'https://public-en-kairos.node.kaia.io'),
+      rpcUrl: process.env.NODIT_KAIROS_RPC_URL || 'https://public-en-kairos.node.kaia.io',
       explorerUrl: 'https://kairoscan.io',
       contracts: {
         chainHive: '0x72CA2541A705468368F9474fB419Defd002EC8af',

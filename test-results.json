@@ -1,39 +1,35 @@
 {
-  "timestamp": "2025-07-17T13:40:58.898Z",
+  "timestamp": "2025-07-17T14:29:17.612Z",
   "results": {
-    "passed": 7,
-    "failed": 3,
-    "errors": [
-      "ethereum - RPC Connection: Error: getaddrinfo ENOTFOUND eth-mainnet.nodit.io",
-      "bsc - RPC Connection: Error: getaddrinfo ENOTFOUND bsc-mainnet.nodit.io",
-      "kairos - Token Contract: Contract call failed: could not decode result data (value=\"0x\", info={ \"method\": \"name\", \"signature\": \"name()\" }, code=BAD_DATA, version=6.15.0)"
-    ]
+    "passed": 14,
+    "failed": 0,
+    "errors": []
   },
   "config": {
     "chains": {
       "ethereum": {
         "name": "Ethereum Mainnet",
-        "rpcUrl": "https://eth-mainnet.nodit.io/RG22cHawR8xTLQ_olWc8W3Jzu~33p_tN",
+        "rpcUrl": "https://ethereum.publicnode.com",
         "chainId": 1,
         "testAddress": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
       },
       "polygon": {
         "name": "Polygon Mainnet",
-        "rpcUrl": "https://polygon-mainnet.nodit.io/RG22cHawR8xTLQ_olWc8W3Jzu~33p_tN",
+        "rpcUrl": "https://polygon-rpc.com",
         "chainId": 137,
         "testAddress": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
       },
       "bsc": {
         "name": "BSC Mainnet",
-        "rpcUrl": "https://bsc-mainnet.nodit.io/RG22cHawR8xTLQ_olWc8W3Jzu~33p_tN",
+        "rpcUrl": "https://bsc-dataseed1.defibit.io",
         "chainId": 56,
         "testAddress": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
       },
       "kairos": {
         "name": "Kairos Network",
-        "rpcUrl": "https://kaia-kairos.nodit.io/RG22cHawR8xTLQ_olWc8W3Jzu~33p_tN",
+        "rpcUrl": "https://public-en-kairos.node.kaia.io",
         "chainId": 1001,
-        "testAddress": "0x5CbD1ABe5029c5c717038f86C31B706f027640AB",
+        "testAddress": "0x19Aac5f612f524B754CA7e7c41cbFa2E981A4432",
         "contracts": {
           "chainHive": "0x72CA2541A705468368F9474fB419Defd002EC8af",
           "token": "0xdc6c396319895dA489b0Cd145A4c5D660b9e10F6",

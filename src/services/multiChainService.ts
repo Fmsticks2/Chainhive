@@ -47,7 +47,7 @@ export const SUPPORTED_CHAINS: ChainConfig[] = [
     id: 'ethereum',
     name: 'Ethereum',
     symbol: 'ETH',
-    rpcUrl: 'https://mainnet.infura.io/v3/',
+    rpcUrl: process.env.NODIT_API_KEY ? `https://eth-mainnet.nodit.io/${process.env.NODIT_API_KEY}` : 'https://ethereum.publicnode.com',
     explorerUrl: 'https://etherscan.io',
     icon: '⟠'
   },
@@ -55,7 +55,7 @@ export const SUPPORTED_CHAINS: ChainConfig[] = [
     id: 'polygon',
     name: 'Polygon',
     symbol: 'MATIC',
-    rpcUrl: 'https://polygon-rpc.com',
+    rpcUrl: process.env.NODIT_API_KEY ? `https://polygon-mainnet.nodit.io/${process.env.NODIT_API_KEY}` : 'https://polygon.llamarpc.com',
     explorerUrl: 'https://polygonscan.com',
     icon: '⬟'
   },
@@ -63,15 +63,15 @@ export const SUPPORTED_CHAINS: ChainConfig[] = [
     id: 'bsc',
     name: 'BNB Smart Chain',
     symbol: 'BNB',
-    rpcUrl: 'https://bsc-dataseed.binance.org',
+    rpcUrl: process.env.NODIT_API_KEY ? `https://bsc-mainnet.nodit.io/${process.env.NODIT_API_KEY}` : 'https://bsc.llamarpc.com',
     explorerUrl: 'https://bscscan.com',
     icon: '●'
   },
   {
-    id: 'kairos',
+    chainId: 1001,
     name: 'Kairos Network',
     symbol: 'KAI',
-    rpcUrl: 'https://public-en-kairos.node.kaia.io',
+    rpcUrl: process.env.NODIT_API_KEY ? `https://kaia-kairos.nodit.io/${process.env.NODIT_API_KEY}` : 'https://public-en-kairos.node.kaia.io',
     explorerUrl: 'https://kairoscan.io',
     icon: '🔗'
   },

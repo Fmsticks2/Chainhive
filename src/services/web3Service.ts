@@ -86,7 +86,7 @@ export class Web3Service {
       chainId: 1,
       name: 'Ethereum',
       symbol: 'ETH',
-      rpcUrl: 'https://mainnet.infura.io/v3/YOUR_INFURA_KEY',
+      rpcUrl: process.env.NODIT_API_KEY ? `https://eth-mainnet.nodit.io/${process.env.NODIT_API_KEY}` : 'https://ethereum.publicnode.com',
       explorerUrl: 'https://etherscan.io',
       contracts: {
         chainHive: '0x...', // Update with deployed address
@@ -99,7 +99,7 @@ export class Web3Service {
       chainId: 137,
       name: 'Polygon',
       symbol: 'MATIC',
-      rpcUrl: 'https://polygon-rpc.com',
+      rpcUrl: process.env.NODIT_API_KEY ? `https://polygon-mainnet.nodit.io/${process.env.NODIT_API_KEY}` : 'https://polygon.llamarpc.com',
       explorerUrl: 'https://polygonscan.com',
       contracts: {
         chainHive: '0x...', // Update with deployed address
@@ -108,17 +108,17 @@ export class Web3Service {
         governance: '0x...' // Update with deployed address
       }
     },
-    1001: { // Kairos Network Testnet
+    1001: { // Kairos Testnet
       chainId: 1001,
-      name: 'Kairos Network',
+      name: 'Kairos',
       symbol: 'KAI',
-      rpcUrl: 'https://public-en-kairos.node.kaia.io',
+      rpcUrl: process.env.NODIT_API_KEY ? `https://kaia-kairos.nodit.io/${process.env.NODIT_API_KEY}` : (process.env.KAIROS_RPC_URL || 'https://public-en-kairos.node.kaia.io'),
       explorerUrl: 'https://kairoscan.io',
       contracts: {
-        chainHive: process.env.VITE_CHAINHIVE_CONTRACT_ADDRESS || '0x...',
-        token: process.env.VITE_CHAINHIVE_TOKEN_ADDRESS || '0x...',
-        multiChain: process.env.VITE_CHAINHIVE_MULTICHAIN_ADDRESS || '0x...',
-        governance: process.env.VITE_CHAINHIVE_GOVERNANCE_ADDRESS || '0x...'
+        chainHive: '0x72CA2541A705468368F9474fB419Defd002EC8af',
+        token: '0xdc6c396319895dA489b0Cd145A4c5D660b9e10F6',
+        multiChain: '0xF565086417Bf8ba76e4FaFC9F0088818eA027539',
+        governance: '0xcBB12aBDA134ac0444f2aa41E98EDD57f8D5631F'
       }
     },
     // Add more chains as needed

@@ -36,19 +36,8 @@ contract DeployScript is Script {
         ChainHiveToken token = new ChainHiveToken();
         console.log("ChainHiveToken deployed at:", address(token));
         
-        // 2. Deploy Timelock Controller for governance
-        address[] memory proposers = new address[](1);
-        address[] memory executors = new address[](1);
-        proposers[0] = deployer; // Initial proposer
-        executors[0] = deployer; // Initial executor
-        
-        TimelockController timelock = new TimelockController(
-            2 days, // 2 day delay
-            proposers,
-            executors,
-            deployer // admin
-        );
-        console.log("TimelockController deployed at:", address(timelock));
+        // 2. Skip TimelockController (simplified governance)
+        console.log("Skipping TimelockController deployment (simplified governance)");
         
         // 3. Deploy Main ChainHive Contract
         ChainHive chainHive = new ChainHive(address(token));
@@ -60,8 +49,7 @@ contract DeployScript is Script {
         
         // 5. Deploy Governance
         ChainHiveGovernance governance = new ChainHiveGovernance(
-            IERC5805(address(token)),
-            timelock
+            IERC5805(address(token))
         );
         console.log("ChainHiveGovernance deployed at:", address(governance));
         
@@ -69,17 +57,13 @@ contract DeployScript is Script {
         // Add ChainHive contract as minter for rewards
         token.addMinter(address(chainHive));
         
-        // Add governance to timelock
-        timelock.grantRole(timelock.PROPOSER_ROLE(), address(governance));
-        timelock.grantRole(timelock.EXECUTOR_ROLE(), address(governance));
-        
         // Add multi-chain contract as bridge operator
         multiChain.addBridgeOperator(deployer); // Initially, deployer manages bridge
         
-        // Transfer ownerships to timelock (governance)
-        chainHive.transferOwnership(address(timelock));
-        multiChain.transferOwnership(address(timelock));
-        token.transferOwnership(address(timelock));
+        // Transfer ownerships to governance
+        chainHive.transferOwnership(address(governance));
+        multiChain.transferOwnership(address(governance));
+        token.transferOwnership(address(governance));
         
         vm.stopBroadcast();
         
@@ -90,7 +74,6 @@ contract DeployScript is Script {
         console.log("ChainHive: %s", address(chainHive));
         console.log("ChainHiveMultiChain: %s", address(multiChain));
         console.log("ChainHiveGovernance: %s", address(governance));
-        console.log("TimelockController: %s", address(timelock));
         console.log("=====================================\n");
         
         // Create deployment configuration file
@@ -102,8 +85,7 @@ contract DeployScript is Script {
             '    "ChainHiveToken": "', vm.toString(address(token)), '",\n',
             '    "ChainHive": "', vm.toString(address(chainHive)), '",\n',
             '    "ChainHiveMultiChain": "', vm.toString(address(multiChain)), '",\n',
-            '    "ChainHiveGovernance": "', vm.toString(address(governance)), '",\n',
-            '    "TimelockController": "', vm.toString(address(timelock)), '"\n',
+            '    "ChainHiveGovernance": "', vm.toString(address(governance)), '"\n',
             '  }\n',
             '}'
         );

@@ -10,7 +10,7 @@ import dotenv from 'dotenv';
 // Load environment variables
 dotenv.config();
 
-const KAIROS_CONTRACT = '0xdc6c396319895dA489b0Cd145A4c5D660b9e10F6';
+const KAIROS_CONTRACT = '0xC34571EF2deF39aF6e1b7F072740061CBc1ec421';
 const NODIT_API_KEY = process.env.NODIT_API_KEY;
 
 async function testNoditKairos() {

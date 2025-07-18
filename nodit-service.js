@@ -31,11 +31,11 @@ class NoditService {
         // ChainHive contract addresses on Kairos
         this.chainHiveContracts = {
             kairos: {
-                ChainHiveToken: '0xdc6c396319895dA489b0Cd145A4c5D660b9e10F6',
-                ChainHive: '0x72CA2541A705468368F9474fB419Defd002EC8af',
-                ChainHiveMultiChain: '0xF565086417Bf8ba76e4FaFC9F0088818eA027539',
-                ChainHiveGovernance: '0xcBB12aBDA134ac0444f2aa41E98EDD57f8D5631F',
-                TimelockController: '0xB6EE67F0c15f949433d0e484F60f70f1828458e3'
+                ChainHiveToken: '0xC34571EF2deF39aF6e1b7F072740061CBc1ec421',
+                ChainHive: '0x76069a57EFaf234E18195756fe580E7064884A46',
+                ChainHiveMultiChain: '0xf93Cf0AB9b60967368714f7d8BB6A48c0034ACD2',
+                ChainHiveGovernance: '0x0601ED877D78dc4BE53cDd25A0dAfF3F6d261640',
+                TimelockController: '0x7c19b04AD3375e3710e5bBF4C528909C407af46B'
             }
         };
         
@@ -567,7 +567,7 @@ class NoditService {
         };
         this.chainHiveContracts = {
             kairos: {
-                ChainHiveToken: '0x1234567890123456789012345678901234567890'
+                ChainHiveToken: '0xC34571EF2deF39aF6e1b7F072740061CBc1ec421'
             }
         };
     }

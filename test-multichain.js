@@ -45,10 +45,10 @@ const TEST_CONFIG = {
       chainId: 1001,
       testAddress: '0x19Aac5f612f524B754CA7e7c41cbFa2E981A4432', // Known KAIA token contract on Kairos
       contracts: {
-        chainHive: process.env.VITE_CHAINHIVE_CONTRACT_ADDRESS || '0x72CA2541A705468368F9474fB419Defd002EC8af',
-        token: process.env.VITE_CHAINHIVE_TOKEN_ADDRESS || '0x19Aac5f612f524B754CA7e7c41cbFa2E981A4432', // Using KAIA token for testing
-        multiChain: process.env.VITE_CHAINHIVE_MULTICHAIN_ADDRESS || '0xF565086417Bf8ba76e4FaFC9F0088818eA027539',
-        governance: process.env.VITE_CHAINHIVE_GOVERNANCE_ADDRESS || '0xcBB12aBDA134ac0444f2aa41E98EDD57f8D5631F'
+        chainHive: process.env.VITE_CHAINHIVE_CONTRACT_ADDRESS || '0x76069a57EFaf234E18195756fe580E7064884A46',
+        token: process.env.VITE_CHAINHIVE_TOKEN_ADDRESS || '0xC34571EF2deF39aF6e1b7F072740061CBc1ec421',
+        multiChain: process.env.VITE_CHAINHIVE_MULTICHAIN_ADDRESS || '0xf93Cf0AB9b60967368714f7d8BB6A48c0034ACD2',
+        governance: process.env.VITE_CHAINHIVE_GOVERNANCE_ADDRESS || '0x0601ED877D78dc4BE53cDd25A0dAfF3F6d261640'   
       }
     }
   }

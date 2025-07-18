@@ -3,13 +3,11 @@
   "chainId": 1001,
   "rpcEndpoint": "https://kaia-kairos.nodit.io/RG22cHawR8xTLQ_olWc8W3Jzu~33p_tN",
   "usingNodit": true,
-  "testContract": "0xdc6c396319895dA489b0Cd145A4c5D660b9e10F6",
-  "deployedAt": "2025-07-18T18:34:55.151Z",
+  "deployedAt": "2025-07-18T19:55:17.635Z",
   "contracts": {
-    "ChainHiveToken": "0xdc6c396319895dA489b0Cd145A4c5D660b9e10F6",
-    "ChainHive": "0xdc6c396319895dA489b0Cd145A4c5D660b9e10F6",
-    "ChainHiveMultiChain": "0xdc6c396319895dA489b0Cd145A4c5D660b9e10F6",
-    "ChainHiveGovernance": "0xdc6c396319895dA489b0Cd145A4c5D660b9e10F6",
-    "TimelockController": "0xdc6c396319895dA489b0Cd145A4c5D660b9e10F6"
+    "ChainHiveToken": "0xC34571EF2deF39aF6e1b7F072740061CBc1ec421",
+    "ChainHive": "0x76069a57EFaf234E18195756fe580E7064884A46",
+    "ChainHiveMultiChain": "0xf93Cf0AB9b60967368714f7d8BB6A48c0034ACD2",
+    "ChainHiveGovernance": "0x0601ED877D78dc4BE53cDd25A0dAfF3F6d261640"
   }
 }

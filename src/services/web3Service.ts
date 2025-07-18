@@ -128,10 +128,10 @@ export class Web3Service {
       rpcUrl: process.env.NODIT_KAIROS_RPC_URL || 'https://public-en-kairos.node.kaia.io',
       explorerUrl: 'https://kairoscan.io',
       contracts: {
-        chainHive: '0x72CA2541A705468368F9474fB419Defd002EC8af',
-        token: '0xdc6c396319895dA489b0Cd145A4c5D660b9e10F6',
-        multiChain: '0xF565086417Bf8ba76e4FaFC9F0088818eA027539',
-        governance: '0xcBB12aBDA134ac0444f2aa41E98EDD57f8D5631F'
+        chainHive: '0x76069a57EFaf234E18195756fe580E7064884A46',
+        token: '0xC34571EF2deF39aF6e1b7F072740061CBc1ec421',
+        multiChain: '0xf93Cf0AB9b60967368714f7d8BB6A48c0034ACD2',
+        governance: '0x0601ED877D78dc4BE53cDd25A0dAfF3F6d261640'
       }
     },
     // Add more chains as needed

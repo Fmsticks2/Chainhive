@@ -3,14 +3,16 @@ pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
+import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 
 /**
  * @title ChainHiveToken (HIVE)
- * @dev ERC20 token for ChainHive platform
+ * @dev ERC20 token with voting capabilities for ChainHive platform
  */
-contract ChainHiveToken is ERC20, ERC20Burnable, Ownable, Pausable {
+contract ChainHiveToken is ERC20, ERC20Burnable, ERC20Votes, Ownable, Pausable {
     
     uint256 public constant MAX_SUPPLY = 1_000_000_000 * 10**18; // 1 billion tokens
     uint256 public constant INITIAL_SUPPLY = 100_000_000 * 10**18; // 100 million tokens
@@ -25,7 +27,7 @@ contract ChainHiveToken is ERC20, ERC20Burnable, Ownable, Pausable {
         _;
     }
     
-    constructor() ERC20("ChainHive Token", "HIVE") Ownable(msg.sender) {
+    constructor() ERC20("ChainHive Token", "HIVE") ERC20Votes() EIP712("ChainHive Token", "1") Ownable(msg.sender) {
         _mint(msg.sender, INITIAL_SUPPLY);
     }
     
@@ -56,7 +58,7 @@ contract ChainHiveToken is ERC20, ERC20Burnable, Ownable, Pausable {
         address from,
         address to,
         uint256 value
-    ) internal override whenNotPaused {
+    ) internal override(ERC20, ERC20Votes) whenNotPaused {
         super._update(from, to, value);
     }
 }

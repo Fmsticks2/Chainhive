@@ -31,7 +31,7 @@ app.use(helmet({
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
             scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
-            connectSrc: ["'self'", "https://api.web3auth.io", "https://web3.nodit.io"],
+            connectSrc: ["'self'", "https://api.web3auth.io", "https://web3.nodit.io", "https://kaia-kairos.nodit.io"],
             imgSrc: ["'self'", "data:", "https:"],
         },
     },
@@ -399,3 +399,40 @@ process.on('SIGINT', () => {
 });
 
 export default app;
+
+// Get Kairos network data
+app.get('/api/kairos/:address', async (req, res) => {
+    try {
+        const { address } = req.params;
+        const { dataType = 'portfolio' } = req.query;
+        
+        if (!address) {
+            return res.status(400).json({ error: 'Address is required' });
+        }
+        
+        const kairosData = await noditService.getKairosChainData(address, dataType);
+        
+        res.json({
+            success: true,
+            data: kairosData,
+            network: 'kairos',
+            chainId: 1001,
+            contracts: {
+                ChainHiveToken: '0xdc6c396319895dA489b0Cd145A4c5D660b9e10F6',
+                ChainHive: '0x72CA2541A705468368F9474fB419Defd002EC8af',
+                ChainHiveMultiChain: '0xF565086417Bf8ba76e4FaFC9F0088818eA027539',
+                ChainHiveGovernance: '0xcBB12aBDA134ac0444f2aa41E98EDD57f8D5631F',
+                TimelockController: '0xB6EE67F0c15f949433d0e484F60f70f1828458e3'
+            },
+            timestamp: new Date().toISOString()
+        });
+        
+    } catch (error) {
+        console.error('Kairos API error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch Kairos data',
+            message: error.message
+        });
+    }
+});

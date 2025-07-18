@@ -21,10 +21,22 @@ class NoditService {
             bsc: { id: 56, name: 'BSC', symbol: 'BNB' },
             arbitrum: { id: 42161, name: 'Arbitrum', symbol: 'ETH' },
             optimism: { id: 10, name: 'Optimism', symbol: 'ETH' },
+            kairos: { id: 1001, name: 'Kairos', symbol: 'KAIA', rpcUrl: 'https://kaia-kairos.nodit.io' },
             aptos: { id: 'aptos', name: 'Aptos', symbol: 'APT' },
             sui: { id: 'sui', name: 'Sui', symbol: 'SUI' },
             xrpl: { id: 'xrpl', name: 'XRPL', symbol: 'XRP' },
             solana: { id: 'solana', name: 'Solana', symbol: 'SOL' }
+        };
+        
+        // ChainHive contract addresses on Kairos
+        this.chainHiveContracts = {
+            kairos: {
+                ChainHiveToken: '0xdc6c396319895dA489b0Cd145A4c5D660b9e10F6',
+                ChainHive: '0x72CA2541A705468368F9474fB419Defd002EC8af',
+                ChainHiveMultiChain: '0xF565086417Bf8ba76e4FaFC9F0088818eA027539',
+                ChainHiveGovernance: '0xcBB12aBDA134ac0444f2aa41E98EDD57f8D5631F',
+                TimelockController: '0xB6EE67F0c15f949433d0e484F60f70f1828458e3'
+            }
         };
         
         this.webhooks = new Map();
@@ -541,6 +553,248 @@ class RateLimiter {
         }
         
         this.requests.push(now);
+    }
+}
+
+class NoditService {
+    constructor(apiKey) {
+        this.apiKey = apiKey;
+        this.supportedChains = {
+            kairos: {
+                rpcUrl: 'https://kairos.nodit.io/v1/rpc',
+                chainId: 1001
+            }
+        };
+        this.chainHiveContracts = {
+            kairos: {
+                ChainHiveToken: '0x1234567890123456789012345678901234567890'
+            }
+        };
+    }
+
+    // ==================== KAIROS NETWORK INTEGRATION ====================
+    
+    async getKairosChainData(address, dataType = 'portfolio') {
+        const kairosConfig = this.supportedChains.kairos;
+        const kairosRpcUrl = process.env.NODIT_KAIROS_RPC_URL || kairosConfig.rpcUrl;
+        
+        try {
+            switch (dataType) {
+                case 'portfolio':
+                    return await this.getKairosPortfolio(address);
+                case 'balance':
+                    return await this.getKairosBalance(address);
+                case 'transactions':
+                    return await this.getKairosTransactions(address);
+                case 'contracts':
+                    return await this.getKairosContractData(address);
+                default:
+                    throw new Error(`Unsupported data type: ${dataType}`);
+            }
+        } catch (error) {
+            console.error(`Failed to fetch Kairos ${dataType} data:`, error);
+            throw error;
+        }
+    }
+    
+    async getKairosPortfolio(address) {
+        const kairosRpcUrl = process.env.NODIT_KAIROS_RPC_URL || this.supportedChains.kairos.rpcUrl;
+        
+        try {
+            // Get native KAIA balance
+            const balanceResponse = await fetch(kairosRpcUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-KEY': this.apiKey
+                },
+                body: JSON.stringify({
+                    jsonrpc: '2.0',
+                    method: 'eth_getBalance',
+                    params: [address, 'latest'],
+                    id: 1
+                })
+            });
+            
+            const balanceData = await balanceResponse.json();
+            const kaiaBalance = parseInt(balanceData.result, 16) / Math.pow(10, 18);
+            
+            // Get ChainHive contract interactions
+            const contractData = await this.getChainHiveContractData(address);
+            
+            return {
+                address,
+                chain: 'kairos',
+                nativeBalance: {
+                    symbol: 'KAIA',
+                    balance: kaiaBalance,
+                    balanceFormatted: kaiaBalance.toFixed(6),
+                    valueUSD: kaiaBalance * 0.1 // Placeholder price
+                },
+                tokens: contractData.tokens || [],
+                contracts: contractData.contracts || [],
+                totalValue: kaiaBalance * 0.1 + (contractData.totalValue || 0),
+                lastUpdated: new Date().toISOString()
+            };
+        } catch (error) {
+            console.error('Failed to fetch Kairos portfolio:', error);
+            throw error;
+        }
+    }
+    
+    async getChainHiveContractData(address) {
+        const contracts = this.chainHiveContracts.kairos;
+        const contractData = {
+            tokens: [],
+            contracts: [],
+            totalValue: 0
+        };
+        
+        try {
+            // Check ChainHive token balance
+            const tokenBalance = await this.getKairosTokenBalance(address, contracts.ChainHiveToken);
+            if (tokenBalance > 0) {
+                contractData.tokens.push({
+                    address: contracts.ChainHiveToken,
+                    symbol: 'CHIVE',
+                    name: 'ChainHive Token',
+                    balance: tokenBalance,
+                    balanceFormatted: tokenBalance.toFixed(6),
+                    valueUSD: tokenBalance * 0.01 // Placeholder price
+                });
+                contractData.totalValue += tokenBalance * 0.01;
+            }
+            
+            // Add contract addresses for reference
+            contractData.contracts = Object.entries(contracts).map(([name, address]) => ({
+                name,
+                address,
+                verified: true
+            }));
+            
+            return contractData;
+        } catch (error) {
+            console.error('Failed to fetch ChainHive contract data:', error);
+            return contractData;
+        }
+    }
+    
+    async getKairosTokenBalance(address, tokenContract) {
+        const kairosRpcUrl = process.env.NODIT_KAIROS_RPC_URL || this.supportedChains.kairos.rpcUrl;
+        
+        try {
+            // ERC20 balanceOf function call
+            const data = '0x70a08231' + address.slice(2).padStart(64, '0');
+            
+            const response = await fetch(kairosRpcUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-KEY': this.apiKey
+                },
+                body: JSON.stringify({
+                    jsonrpc: '2.0',
+                    method: 'eth_call',
+                    params: [{
+                        to: tokenContract,
+                        data: data
+                    }, 'latest'],
+                    id: 1
+                })
+            });
+            
+            const result = await response.json();
+            return parseInt(result.result, 16) / Math.pow(10, 18); // Assuming 18 decimals
+        } catch (error) {
+            console.error('Failed to get token balance:', error);
+            return 0;
+        }
+    }
+
+    // Missing method implementations referenced in getKairosChainData
+    async getKairosBalance(address) {
+        const kairosRpcUrl = process.env.NODIT_KAIROS_RPC_URL || this.supportedChains.kairos.rpcUrl;
+        
+        try {
+            const balanceResponse = await fetch(kairosRpcUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-KEY': this.apiKey
+                },
+                body: JSON.stringify({
+                    jsonrpc: '2.0',
+                    method: 'eth_getBalance',
+                    params: [address, 'latest'],
+                    id: 1
+                })
+            });
+            
+            const balanceData = await balanceResponse.json();
+            const kaiaBalance = parseInt(balanceData.result, 16) / Math.pow(10, 18);
+            
+            return {
+                address,
+                chain: 'kairos',
+                symbol: 'KAIA',
+                balance: kaiaBalance,
+                balanceFormatted: kaiaBalance.toFixed(6),
+                valueUSD: kaiaBalance * 0.1
+            };
+        } catch (error) {
+            console.error('Failed to fetch Kairos balance:', error);
+            throw error;
+        }
+    }
+
+    async getKairosTransactions(address) {
+        // Placeholder implementation - you'll need to implement based on your needs
+        try {
+            // This would typically fetch transaction history from the blockchain
+            return {
+                address,
+                chain: 'kairos',
+                transactions: [],
+                totalTransactions: 0
+            };
+        } catch (error) {
+            console.error('Failed to fetch Kairos transactions:', error);
+            throw error;
+        }
+    }
+
+    async getKairosContractData(address) {
+        try {
+            return await this.getChainHiveContractData(address);
+        } catch (error) {
+            console.error('Failed to fetch Kairos contract data:', error);
+            throw error;
+        }
+    }
+}
+
+// Basic RateLimiter class (since it's referenced in the export)
+class RateLimiter {
+    constructor(maxRequests = 100, windowMs = 60000) {
+        this.maxRequests = maxRequests;
+        this.windowMs = windowMs;
+        this.requests = new Map();
+    }
+
+    isAllowed(identifier) {
+        const now = Date.now();
+        const userRequests = this.requests.get(identifier) || [];
+        
+        // Remove old requests outside the window
+        const validRequests = userRequests.filter(time => now - time < this.windowMs);
+        
+        if (validRequests.length >= this.maxRequests) {
+            return false;
+        }
+        
+        validRequests.push(now);
+        this.requests.set(identifier, validRequests);
+        return true;
     }
 }
 

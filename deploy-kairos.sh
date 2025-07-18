@@ -8,7 +8,13 @@ echo "🚀 Starting ChainHive deployment to Kairos Network..."
 # Set environment variables
 export PRIVATE_KEY="73456a197074a8a7d3cb069745cc6c58fd750604aba0a9d89d54ebbb9865cb08"
 export DEPLOYER_ADDRESS="0x5CbD1ABe5029c5c717038f86C31B706f027640AB"
-export KAIROS_RPC_URL="https://public-en-kairos.node.kaia.io"
+export KAIROS_RPC_URL="https://kaia-kairos.nodit.io/${NODIT_API_KEY}"
+
+# Check if NODIT_API_KEY is set
+if [ -z "$NODIT_API_KEY" ]; then
+    echo "⚠️  NODIT_API_KEY not set, falling back to public RPC"
+    export KAIROS_RPC_URL="https://public-en-kairos.node.kaia.io"
+fi
 
 # Create deployments directory if it doesn't exist
 mkdir -p deployments

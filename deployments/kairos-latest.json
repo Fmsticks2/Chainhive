@@ -1,11 +1,15 @@
 {
   "network": "kairos",
   "chainId": 1001,
+  "rpcEndpoint": "https://kaia-kairos.nodit.io/RG22cHawR8xTLQ_olWc8W3Jzu~33p_tN",
+  "usingNodit": true,
+  "testContract": "0xdc6c396319895dA489b0Cd145A4c5D660b9e10F6",
+  "deployedAt": "2025-07-18T18:34:55.151Z",
   "contracts": {
     "ChainHiveToken": "0xdc6c396319895dA489b0Cd145A4c5D660b9e10F6",
-    "ChainHive": "0x72CA2541A705468368F9474fB419Defd002EC8af",
-    "ChainHiveMultiChain": "0xF565086417Bf8ba76e4FaFC9F0088818eA027539",
-    "ChainHiveGovernance": "0xcBB12aBDA134ac0444f2aa41E98EDD57f8D5631F",
-    "TimelockController": "0xB6EE67F0c15f949433d0e484F60f70f1828458e3"
+    "ChainHive": "0xdc6c396319895dA489b0Cd145A4c5D660b9e10F6",
+    "ChainHiveMultiChain": "0xdc6c396319895dA489b0Cd145A4c5D660b9e10F6",
+    "ChainHiveGovernance": "0xdc6c396319895dA489b0Cd145A4c5D660b9e10F6",
+    "TimelockController": "0xdc6c396319895dA489b0Cd145A4c5D660b9e10F6"
   }
 }

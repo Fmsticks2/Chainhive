@@ -1,11 +1,11 @@
-import { NoditService } from '../../nodit-service.js';
-import dotenv from 'dotenv';
+const { NoditService } = require('../../nodit-service.js');
+const dotenv = require('dotenv');
 dotenv.config();
 
 const NODIT_API_KEY = process.env.NODIT_API_KEY || 'demo-key';
 const noditService = new NoditService(NODIT_API_KEY);
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }

@@ -1,13 +1,13 @@
 // API endpoint for fetching current market conditions
 
-export default async function handler(req, res) {
+const { NoditService } = require('../nodit-service.js');
+
+module.exports = async function handler(req, res) {
     if (req.method !== 'GET') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
     try {
-        // Import NoditService
-        const { NoditService } = await import('../nodit-service.js');
         
         // Initialize service with API key from environment
         const noditService = new NoditService(process.env.NODIT_API_KEY);

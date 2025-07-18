@@ -1,10 +1,10 @@
 // NODIT MCP Integration Service
 // Comprehensive Web3 Data APIs, MCP Analysis, and Webhook Management
 
-import axios from 'axios';
-import { EventEmitter } from 'events';
-import WebSocket from 'ws';
-import { createHmac, timingSafeEqual } from 'crypto';
+const axios = require('axios');
+const { EventEmitter } = require('events');
+const WebSocket = require('ws');
+const { createHmac, timingSafeEqual } = require('crypto');
 
 class NoditService {
     constructor(apiKey, options = {}) {
@@ -799,4 +799,4 @@ class RateLimiter {
 }
 
 // Export for use in other modules
-export { NoditService, RateLimiter };
+module.exports = { NoditService, RateLimiter };

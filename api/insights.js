@@ -1,6 +1,6 @@
 // API endpoint for AI-powered portfolio insights
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 
     try {
         // Import NoditService
-        const { NoditService } = await import('../nodit-service.js');
+        const { NoditService } = require('../nodit-service.js');
         
         // Initialize service with API key from environment
         const noditService = new NoditService(process.env.NODIT_API_KEY);

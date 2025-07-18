@@ -45,7 +45,7 @@ export interface NoditMCPResponse {
 export class NoditService {
   private static instance: NoditService;
   private apiKey: string = '';
-  private baseUrl = 'https://api.nodit.io/v1';
+  private baseUrl = 'https://web3.nodit.io/v1';
   private kairosRpcUrl = 'https://kairos-testnet.kaichain.net';
 
   static getInstance(): NoditService {

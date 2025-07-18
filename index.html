@@ -1,27 +1,2471 @@
 
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ChainHive - Web3 AI Assistant</title>
-    <meta name="description" content="AI-powered Web3 assistant for blockchain analysis, portfolio management, and DeFi insights" />
-    <meta name="author" content="ChainHive" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https: blob:; connect-src 'self' https: wss: ws:; frame-src 'self' https:;">
+    <title>ChainHive - Enterprise Multi-Chain Portfolio Intelligence</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/web3auth@latest/dist/web3auth.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --dark-gradient: linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 100%);
+            --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --error-gradient: linear-gradient(135deg, #fc466b 0%, #3f5efb 100%);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --surface: #ffffff;
+            --surface-elevated: #f8fafc;
+            --border-light: #e2e8f0;
+            --border-medium: #cbd5e1;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+            --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.1);
+            --shadow-strong: 0 20px 60px rgba(0, 0, 0, 0.2);
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.5rem;
+            --border-radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-    <link rel="icon" href="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=32&h=32&fit=crop&crop=center" type="image/png">
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    <meta property="og:title" content="ChainHive - Web3 AI Assistant" />
-    <meta property="og:description" content="AI-powered Web3 assistant for blockchain analysis, portfolio management, and DeFi insights" />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=1200&h=630&fit=crop&crop=center" />
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@chainhive" />
-    <meta name="twitter:image" content="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=1200&h=630&fit=crop&crop=center" />
-  </head>
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
 
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+        /* Enhanced Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(248, 250, 252, 0.8);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--border-light);
+            z-index: 1000;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .header.scrolled {
+            background: rgba(248, 250, 252, 0.95);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 0;
+        }
+
+        .logo {
+            font-size: 1.75rem;
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+            letter-spacing: -0.025em;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2.5rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-gradient);
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .connect-btn {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 0.875rem 1.75rem;
+            border-radius: var(--radius-xl);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .connect-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .connect-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .connect-btn:hover::before {
+            left: 100%;
+        }
+
+        /* Premium Hero Section */
+        .hero {
+            padding: 140px 0 100px;
+            text-align: center;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.1) 0%, transparent 50%);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-2xl);
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .hero h1 {
+            font-size: clamp(3rem, 8vw, 5.5rem);
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #0f172a 0%, #334155 50%, #667eea 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.05em;
+            line-height: 1.1;
+        }
+
+        .hero-subtitle {
+            font-size: 1.375rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            font-weight: 400;
+            line-height: 1.6;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 4rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 1.125rem 2.5rem;
+            border: none;
+            border-radius: var(--radius-xl);
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-primary);
+            padding: 1.125rem 2.5rem;
+            border: 2px solid var(--border-medium);
+            border-radius: var(--radius-xl);
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-2xl);
+        }
+
+        .btn-secondary:hover {
+            background: var(--text-primary);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .stat-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            padding: 1.5rem;
+            border-radius: var(--radius-xl);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+
+        /* Enhanced Features Section */
+        .features {
+            padding: 120px 0;
+            background: var(--surface);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        .section-badge {
+            display: inline-block;
+            background: var(--primary-gradient);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-2xl);
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            letter-spacing: -0.025em;
+        }
+
+        .section-description {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--surface);
+            padding: 2.5rem;
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+            transform: scaleX(0);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-2xl);
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--primary-gradient);
+            border-radius: var(--radius-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            color: white;
+            font-size: 2rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            font-size: 1.05rem;
+        }
+
+        /* Premium Portfolio Section */
+        .portfolio-section {
+            padding: 120px 0;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+
+        .portfolio-demo {
+            background: var(--surface);
+            border-radius: var(--radius-2xl);
+            padding: 3rem;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--border-light);
+            margin-top: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .portfolio-demo::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--primary-gradient);
+        }
+
+        .wallet-input {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .wallet-input input {
+            flex: 1;
+            padding: 1.25rem 1.5rem;
+            border: 2px solid var(--border-light);
+            border-radius: var(--radius-xl);
+            font-size: 1.05rem;
+            min-width: 350px;
+            background: var(--surface-elevated);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .wallet-input input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: var(--surface);
+        }
+
+        .analyze-btn {
+            background: var(--success-gradient);
+            color: white;
+            border: none;
+            padding: 1.25rem 2.5rem;
+            border-radius: var(--radius-xl);
+            font-weight: 600;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-lg);
+            white-space: nowrap;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .portfolio-results {
+            display: none;
+            margin-top: 3rem;
+        }
+
+        .chain-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+            background: var(--surface-elevated);
+            padding: 0.5rem;
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border-light);
+        }
+
+        .chain-tab {
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius-lg);
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
+            color: var(--text-secondary);
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chain-tab.active {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .token-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .token-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--accent-gradient);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .token-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-strong);
+        }
+
+        .token-card:hover::before {
+            opacity: 1;
+        }
+
+        .token-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .token-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            margin-right: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .token-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .token-icon-fallback {
+            width: 100%;
+            height: 100%;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+            border-radius: 50%;
+        }
+
+        .token-info h4 {
+            margin: 0 0 0.25rem 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .token-info p {
+            margin: 0 0 0.5rem 0;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .token-price-change {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .token-price-change.positive {
+            color: #4ade80;
+        }
+
+        .token-price-change.negative {
+            color: #f87171;
+        }
+
+        .token-price-change i {
+            margin-right: 0.25rem;
+        }
+
+        .token-metrics {
+            margin-bottom: 1rem;
+        }
+
+        .token-balance {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .token-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .token-allocation {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .token-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-token-action {
+            flex: 1;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+        }
+
+        .btn-token-action:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .chain-summary-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chain-summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-gradient);
+        }
+
+        .summary-header h3 {
+            margin: 0 0 1rem 0;
+            color: white;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .summary-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+
+        .metric {
+            text-align: center;
+        }
+
+        .metric-label {
+            display: block;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-value {
+            display: block;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .metric-value.risk-low {
+            color: #4ade80;
+        }
+
+        .metric-value.risk-medium {
+            color: #fbbf24;
+        }
+
+        .metric-value.risk-high {
+            color: #f87171;
+        }
+
+        .empty-state, .error-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .empty-icon, .error-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h3, .error-state h3 {
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-retry {
+            margin-top: 1rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-retry:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .ai-insights {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: var(--radius-2xl);
+            padding: 2.5rem;
+            border: 1px solid #bae6fd;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-insights::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--success-gradient);
+        }
+
+        .ai-insights h3 {
+            color: #0c4a6e;
+            margin-bottom: 1.5rem;
+            font-size: 1.375rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .ai-insights-text {
+            color: #0c4a6e;
+            line-height: 1.7;
+            font-size: 1.05rem;
+        }
+
+        /* Enhanced Footer */
+        .footer {
+            background: var(--dark-gradient);
+            color: white;
+            padding: 5rem 0 2rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1.5rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+            font-size: 1.125rem;
+        }
+
+        .footer-section a {
+            color: #94a3b8;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+        }
+
+        .footer-section a:hover {
+            color: white;
+            transform: translateX(4px);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 2rem;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        /* Loading States */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Premium Notifications */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            border-radius: var(--border-radius);
+            color: white;
+            font-weight: 500;
+            transform: translateX(400px);
+            transition: var(--transition);
+            z-index: 1000;
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            min-width: 300px;
+            max-width: 400px;
+            box-shadow: var(--shadow-strong);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.9) 0%, rgba(21, 128, 61, 0.9) 100%);
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.9) 0%, rgba(185, 28, 28, 0.9) 100%);
+        }
+
+        .notification.warning {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.9) 0%, rgba(180, 83, 9, 0.9) 100%);
+        }
+
+        .notification.info {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(29, 78, 216, 0.9) 100%);
+        }
+
+        .notification-content {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            gap: 0.75rem;
+        }
+
+        .notification-content i {
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .notification-content span {
+            flex: 1;
+            line-height: 1.4;
+        }
+
+        .notification-close {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 4px;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+
+        .notification-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .container {
+                padding: 0 1.5rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                padding: 120px 0 80px;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .wallet-input {
+                flex-direction: column;
+            }
+
+            .wallet-input input {
+                min-width: auto;
+            }
+
+            .chain-tabs {
+                justify-content: center;
+            }
+
+            .portfolio-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 1rem;
+            }
+
+            .portfolio-demo {
+                padding: 2rem;
+            }
+
+            .hero-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Scroll animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes progressFill {
+            from {
+                width: 0%;
+            }
+            to {
+                width: var(--progress-width, 0%);
+            }
+        }
+
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease-out;
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .animate-on-scroll.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .analysis-progress {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            z-index: 1001;
+            min-width: 300px;
+            text-align: center;
+            color: white;
+        }
+
+        .analysis-progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .analysis-progress-bar::after {
+            content: '';
+            display: block;
+            height: 100%;
+            background: var(--accent-gradient);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+            animation: progressFill 0.3s ease;
+        }
+
+        .analysis-progress-text {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 0.5rem;
+        }
+
+        .insights-header {
+            margin-bottom: 1rem;
+        }
+
+        .confidence-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .confidence-indicator.high {
+            background: var(--success-gradient);
+            color: white;
+        }
+
+        .confidence-indicator.medium {
+            background: var(--warning-gradient);
+            color: white;
+        }
+
+        .confidence-indicator.low {
+            background: var(--error-gradient);
+            color: white;
+        }
+
+        .insights-content {
+            line-height: 1.6;
+        }
+
+        .insight-item {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-gradient);
+        }
+
+        .insight-item.error {
+            border-left-color: #f87171;
+            background: rgba(248, 113, 113, 0.1);
+        }
+
+        .recommendations {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .recommendations h4 {
+            margin: 0 0 0.75rem 0;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .recommendations ul {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+
+        .recommendations li {
+            margin-bottom: 0.5rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Analytics Section Styles */
+        .analytics-section {
+            padding: 8rem 0;
+            background: var(--dark-gradient);
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+
+        .analytics-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .analytics-card.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .analytics-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-strong);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header h3 {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0;
+        }
+
+        .btn-card-action {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .btn-card-action:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .analytics-content {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .metric-value {
+            font-weight: 600;
+            font-size: 1rem;
+            color: white;
+        }
+
+        .metric-value.positive {
+            color: #4ade80;
+        }
+
+        .metric-value.negative {
+            color: #f87171;
+        }
+
+        .risk-gauge {
+            margin-bottom: 1.5rem;
+        }
+
+        .gauge-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+        }
+
+        .gauge-fill {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, #4ade80 0%, #fbbf24 50%, #f87171 100%);
+            mask: radial-gradient(circle at center, transparent 60%, black 60%);
+            -webkit-mask: radial-gradient(circle at center, transparent 60%, black 60%);
+        }
+
+        .gauge-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .risk-breakdown {
+            space-y: 1rem;
+        }
+
+        .risk-item {
+            margin-bottom: 1rem;
+        }
+
+        .risk-item span {
+            display: block;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 0.5rem;
+        }
+
+        .risk-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .risk-fill {
+            height: 100%;
+            background: var(--warning-gradient);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .correlation-matrix {
+            space-y: 0.5rem;
+        }
+
+        .correlation-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .asset-label {
+            width: 40px;
+            font-weight: 600;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .correlation-cells {
+            display: flex;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .correlation-cell {
+            flex: 1;
+            padding: 0.5rem;
+            text-align: center;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .correlation-cell.high {
+            background: rgba(74, 222, 128, 0.3);
+            color: #4ade80;
+        }
+
+        .correlation-cell.medium {
+            background: rgba(251, 191, 36, 0.3);
+            color: #fbbf24;
+        }
+
+        .correlation-cell.low {
+            background: rgba(248, 113, 113, 0.3);
+            color: #f87171;
+        }
+
+        .chart-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-chart-period {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-chart-period.active,
+        .btn-chart-period:hover {
+            background: var(--primary-gradient);
+            color: white;
+            border-color: transparent;
+        }
+
+        .chart-container {
+            margin-top: 1.5rem;
+        }
+
+        .chart-placeholder {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .chart-placeholder i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* API Section Styles */
+        .api-section {
+            padding: 8rem 0;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+
+        .api-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+            margin-bottom: 4rem;
+        }
+
+        .api-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .api-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-strong);
+        }
+
+        .api-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .api-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--primary-gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .api-header h3 {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+            flex: 1;
+            margin-left: 1rem;
+        }
+
+        .api-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .api-status.live {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+        }
+
+        .api-status.beta {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+        }
+
+        .api-card p {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .api-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .api-feature {
+            padding: 0.25rem 0.75rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .api-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn-api-docs,
+        .btn-api-test {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-api-docs {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .btn-api-test {
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+        }
+
+        .btn-api-docs:hover,
+        .btn-api-test:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .api-demo {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .demo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .demo-header h3 {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .demo-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .api-select {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .btn-demo-run {
+            padding: 0.5rem 1rem;
+            background: var(--accent-gradient);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-demo-run:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .demo-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .demo-request,
+        .demo-response {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .demo-request h4,
+        .demo-response h4 {
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 0 0 1rem 0;
+        }
+
+        .demo-request pre,
+        .demo-response pre {
+            margin: 0;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            overflow-x: auto;
+        }
+
+        /* Enterprise Section Styles */
+        .enterprise-section {
+            padding: 8rem 0;
+            background: var(--dark-gradient);
+        }
+
+        .enterprise-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+            margin-bottom: 4rem;
+        }
+
+        .enterprise-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 2.5rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .enterprise-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-strong);
+        }
+
+        .enterprise-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--primary-gradient);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            margin: 0 auto 1.5rem;
+        }
+
+        .enterprise-card h3 {
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin: 0 0 1rem 0;
+        }
+
+        .enterprise-card p {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .enterprise-features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 2rem 0;
+            text-align: left;
+        }
+
+        .enterprise-features li {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        .enterprise-features i {
+            color: #4ade80;
+            font-size: 0.8rem;
+        }
+
+        .btn-enterprise {
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-enterprise:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .enterprise-cta {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 3rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .enterprise-cta::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-gradient);
+        }
+
+        .cta-content h3 {
+            color: white;
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0 0 1rem 0;
+        }
+
+        .cta-content p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .enterprise-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            display: block;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Responsive Design for New Sections */
+        @media (max-width: 768px) {
+            .analytics-grid,
+            .api-grid,
+            .enterprise-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .demo-content {
+                grid-template-columns: 1fr;
+            }
+
+            .enterprise-stats {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .chart-controls {
+                flex-wrap: wrap;
+            }
+
+            .demo-controls {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Enhanced Header -->
+    <header class="header" id="header">
+        <nav class="nav container">
+            <a href="#" class="logo">ChainHive</a>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#portfolio">Portfolio</a></li>
+                <li><a href="#analytics">Analytics</a></li>
+                <li><a href="#api">API</a></li>
+                <li><a href="#enterprise">Enterprise</a></li>
+            </ul>
+            <button class="connect-btn" id="connectWallet">
+                <i class="fas fa-wallet"></i> Connect Wallet
+            </button>
+        </nav>
+    </header>
+
+    <!-- Premium Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i class="fas fa-sparkles"></i>
+                    <span>Powered by NODIT Web3 Infrastructure</span>
+                </div>
+                <h1>Enterprise Multi-Chain<br>Portfolio Intelligence</h1>
+                <p class="hero-subtitle">Advanced portfolio analytics, AI-powered insights, and real-time monitoring across 50+ blockchains. Built for institutions, traders, and DeFi protocols.</p>
+                <div class="cta-buttons">
+                    <button class="btn-primary" id="getStarted">
+                        <i class="fas fa-rocket"></i> Start Analysis
+                    </button>
+                    <button class="btn-secondary" id="learnMore">
+                        <i class="fas fa-play"></i> Watch Demo
+                    </button>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-card">
+                        <span class="stat-number">$2.4B+</span>
+                        <span class="stat-label">Assets Tracked</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">50+</span>
+                        <span class="stat-label">Blockchains</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">99.9%</span>
+                        <span class="stat-label">Uptime SLA</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">10K+</span>
+                        <span class="stat-label">Active Users</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Enhanced Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Core Features</span>
+                <h2 class="section-title">Enterprise-Grade Portfolio Intelligence</h2>
+                <p class="section-description">Comprehensive multi-chain analytics with institutional-level security, real-time data, and AI-powered insights.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-network-wired"></i>
+                    </div>
+                    <h3>Multi-Chain Architecture</h3>
+                    <p>Unified view across Ethereum, Polygon, BSC, Avalanche, Solana, Aptos, XRPL, and 40+ other blockchains with real-time synchronization.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3>AI Portfolio Optimization</h3>
+                    <p>Advanced machine learning algorithms analyze your portfolio composition, risk metrics, and market trends to provide actionable insights.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Advanced Analytics</h3>
+                    <p>Comprehensive performance tracking, risk assessment, correlation analysis, and predictive modeling for informed decision-making.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-halved"></i>
+                    </div>
+                    <h3>Enterprise Security</h3>
+                    <p>Bank-grade encryption, SOC 2 compliance, and zero-knowledge architecture ensure your data remains private and secure.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3>Real-Time Monitoring</h3>
+                    <p>Instant alerts for portfolio changes, large transactions, price movements, and market opportunities via webhooks and notifications.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <h3>Developer APIs</h3>
+                    <p>RESTful APIs, GraphQL endpoints, and WebSocket streams for seamless integration with your existing infrastructure and applications.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Premium Portfolio Analysis Section -->
+    <section class="portfolio-section" id="portfolio">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Live Demo</span>
+                <h2 class="section-title">Portfolio Analysis Engine</h2>
+                <p class="section-description">Experience our advanced portfolio analytics with real-time data from NODIT's Web3 infrastructure.</p>
+            </div>
+            <div class="portfolio-demo">
+                <div class="wallet-input">
+                    <input type="text" id="walletAddress" placeholder="Enter wallet address (0x..., apt1..., r...)" />
+                    <button class="analyze-btn" id="analyzeWallet">
+                        <span id="analyzeText"><i class="fas fa-search"></i> Analyze Portfolio</span>
+                        <span id="analyzeLoading" class="loading hidden"></span>
+                    </button>
+                </div>
+                
+                <div class="portfolio-results" id="portfolioResults">
+                    <div class="chain-tabs" id="chainTabs">
+                        <button class="chain-tab active" data-chain="ethereum">
+                            <i class="fab fa-ethereum"></i> Ethereum
+                        </button>
+                        <button class="chain-tab" data-chain="aptos">
+                            <i class="fas fa-coins"></i> Aptos
+                        </button>
+                        <button class="chain-tab" data-chain="xrpl">
+                            <i class="fas fa-gem"></i> XRPL
+                        </button>
+                    </div>
+                    
+                    <div class="portfolio-grid" id="portfolioGrid">
+                        <!-- Portfolio items will be dynamically inserted here -->
+                    </div>
+                    
+                    <div class="ai-insights" id="aiInsights">
+                        <h3><i class="fas fa-brain"></i> AI-Powered Insights</h3>
+                        <div class="ai-insights-text" id="aiInsightsText">
+                            Connect your wallet to receive personalized AI-powered portfolio analysis, risk assessment, and optimization recommendations.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Analytics Section -->
+    <section class="analytics-section" id="analytics">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Advanced Analytics</span>
+                <h2 class="section-title">Professional Trading Dashboard</h2>
+                <p class="section-description">Comprehensive analytics suite with advanced charting, risk metrics, and performance tracking for professional traders and institutions.</p>
+            </div>
+            <div class="analytics-grid">
+                <div class="analytics-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chart-area"></i> Performance Analytics</h3>
+                        <button class="btn-card-action" id="viewPerformance">
+                            <i class="fas fa-external-link-alt"></i> View Details
+                        </button>
+                    </div>
+                    <div class="analytics-content">
+                        <div class="metric-row">
+                            <span class="metric-label">Total Return</span>
+                            <span class="metric-value positive">+24.7%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Sharpe Ratio</span>
+                            <span class="metric-value">1.84</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Max Drawdown</span>
+                            <span class="metric-value negative">-8.3%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Volatility</span>
+                            <span class="metric-value">18.2%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="analytics-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-shield-alt"></i> Risk Management</h3>
+                        <button class="btn-card-action" id="viewRisk">
+                            <i class="fas fa-external-link-alt"></i> View Details
+                        </button>
+                    </div>
+                    <div class="analytics-content">
+                        <div class="risk-gauge">
+                            <div class="gauge-container">
+                                <div class="gauge-fill" style="--fill: 65%"></div>
+                                <div class="gauge-label">Risk Score: 6.5/10</div>
+                            </div>
+                        </div>
+                        <div class="risk-breakdown">
+                            <div class="risk-item">
+                                <span>Concentration Risk</span>
+                                <div class="risk-bar">
+                                    <div class="risk-fill" style="width: 40%"></div>
+                                </div>
+                            </div>
+                            <div class="risk-item">
+                                <span>Volatility Risk</span>
+                                <div class="risk-bar">
+                                    <div class="risk-fill" style="width: 70%"></div>
+                                </div>
+                            </div>
+                            <div class="risk-item">
+                                <span>Liquidity Risk</span>
+                                <div class="risk-bar">
+                                    <div class="risk-fill" style="width: 25%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="analytics-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-project-diagram"></i> Correlation Matrix</h3>
+                        <button class="btn-card-action" id="viewCorrelation">
+                            <i class="fas fa-external-link-alt"></i> View Details
+                        </button>
+                    </div>
+                    <div class="analytics-content">
+                        <div class="correlation-matrix">
+                            <div class="correlation-row">
+                                <span class="asset-label">ETH</span>
+                                <div class="correlation-cells">
+                                    <div class="correlation-cell high">1.00</div>
+                                    <div class="correlation-cell medium">0.72</div>
+                                    <div class="correlation-cell low">0.31</div>
+                                </div>
+                            </div>
+                            <div class="correlation-row">
+                                <span class="asset-label">BTC</span>
+                                <div class="correlation-cells">
+                                    <div class="correlation-cell medium">0.72</div>
+                                    <div class="correlation-cell high">1.00</div>
+                                    <div class="correlation-cell low">0.28</div>
+                                </div>
+                            </div>
+                            <div class="correlation-row">
+                                <span class="asset-label">SOL</span>
+                                <div class="correlation-cells">
+                                    <div class="correlation-cell low">0.31</div>
+                                    <div class="correlation-cell low">0.28</div>
+                                    <div class="correlation-cell high">1.00</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="analytics-card full-width">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chart-line"></i> Portfolio Performance Chart</h3>
+                        <div class="chart-controls">
+                            <button class="btn-chart-period active" data-period="1D">1D</button>
+                            <button class="btn-chart-period" data-period="1W">1W</button>
+                            <button class="btn-chart-period" data-period="1M">1M</button>
+                            <button class="btn-chart-period" data-period="3M">3M</button>
+                            <button class="btn-chart-period" data-period="1Y">1Y</button>
+                            <button class="btn-chart-period" data-period="ALL">ALL</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-placeholder">
+                            <i class="fas fa-chart-line"></i>
+                            <p>Interactive portfolio performance chart will be displayed here</p>
+                            <button class="btn-primary" id="loadChart">
+                                <i class="fas fa-play"></i> Load Chart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- API Section -->
+    <section class="api-section" id="api">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Developer APIs</span>
+                <h2 class="section-title">Enterprise API Suite</h2>
+                <p class="section-description">Powerful APIs built on NODIT infrastructure for seamless integration with your applications and trading systems.</p>
+            </div>
+            <div class="api-grid">
+                <div class="api-card">
+                    <div class="api-header">
+                        <div class="api-icon">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <h3>Portfolio API</h3>
+                        <span class="api-status live">Live</span>
+                    </div>
+                    <p>Real-time portfolio data across 50+ blockchains with sub-second latency and 99.9% uptime SLA.</p>
+                    <div class="api-features">
+                        <span class="api-feature">Multi-chain support</span>
+                        <span class="api-feature">Real-time updates</span>
+                        <span class="api-feature">Historical data</span>
+                    </div>
+                    <div class="api-actions">
+                        <button class="btn-api-docs" id="portfolioApiDocs">
+                            <i class="fas fa-book"></i> Documentation
+                        </button>
+                        <button class="btn-api-test" id="portfolioApiTest">
+                            <i class="fas fa-play"></i> Try API
+                        </button>
+                    </div>
+                </div>
+                <div class="api-card">
+                    <div class="api-header">
+                        <div class="api-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h3>AI Insights API</h3>
+                        <span class="api-status live">Live</span>
+                    </div>
+                    <p>Advanced AI-powered portfolio analysis, risk assessment, and optimization recommendations.</p>
+                    <div class="api-features">
+                        <span class="api-feature">ML-powered insights</span>
+                        <span class="api-feature">Risk analysis</span>
+                        <span class="api-feature">Optimization tips</span>
+                    </div>
+                    <div class="api-actions">
+                        <button class="btn-api-docs" id="aiApiDocs">
+                            <i class="fas fa-book"></i> Documentation
+                        </button>
+                        <button class="btn-api-test" id="aiApiTest">
+                            <i class="fas fa-play"></i> Try API
+                        </button>
+                    </div>
+                </div>
+                <div class="api-card">
+                    <div class="api-header">
+                        <div class="api-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h3>WebSocket Streams</h3>
+                        <span class="api-status live">Live</span>
+                    </div>
+                    <p>Real-time data streams for portfolio changes, price updates, and market events via WebSocket connections.</p>
+                    <div class="api-features">
+                        <span class="api-feature">Real-time streams</span>
+                        <span class="api-feature">Event notifications</span>
+                        <span class="api-feature">Custom filters</span>
+                    </div>
+                    <div class="api-actions">
+                        <button class="btn-api-docs" id="websocketApiDocs">
+                            <i class="fas fa-book"></i> Documentation
+                        </button>
+                        <button class="btn-api-test" id="websocketApiTest">
+                            <i class="fas fa-play"></i> Try API
+                        </button>
+                    </div>
+                </div>
+                <div class="api-card">
+                    <div class="api-header">
+                        <div class="api-icon">
+                            <i class="fas fa-webhook"></i>
+                        </div>
+                        <h3>Webhooks</h3>
+                        <span class="api-status beta">Beta</span>
+                    </div>
+                    <p>Automated notifications for portfolio events, price alerts, and custom triggers sent to your endpoints.</p>
+                    <div class="api-features">
+                        <span class="api-feature">Custom triggers</span>
+                        <span class="api-feature">Reliable delivery</span>
+                        <span class="api-feature">Retry logic</span>
+                    </div>
+                    <div class="api-actions">
+                        <button class="btn-api-docs" id="webhookApiDocs">
+                            <i class="fas fa-book"></i> Documentation
+                        </button>
+                        <button class="btn-api-test" id="webhookApiTest">
+                            <i class="fas fa-play"></i> Try API
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="api-demo">
+                <div class="demo-header">
+                    <h3>API Playground</h3>
+                    <div class="demo-controls">
+                        <select id="apiEndpoint" class="api-select">
+                            <option value="/api/portfolio">GET /api/portfolio</option>
+                            <option value="/api/insights">POST /api/insights</option>
+                            <option value="/api/balance">GET /api/balance</option>
+                            <option value="/api/nfts">GET /api/nfts</option>
+                        </select>
+                        <button class="btn-demo-run" id="runApiDemo">
+                            <i class="fas fa-play"></i> Run Request
+                        </button>
+                    </div>
+                </div>
+                <div class="demo-content">
+                    <div class="demo-request">
+                        <h4>Request</h4>
+                        <pre id="demoRequest"><code>{
+  "address": "0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b",
+  "chains": ["ethereum", "polygon", "bsc"]
+}</code></pre>
+                    </div>
+                    <div class="demo-response">
+                        <h4>Response</h4>
+                        <pre id="demoResponse"><code>{
+  "status": "success",
+  "data": {
+    "totalValue": "$125,430.50",
+    "tokens": [...],
+    "nfts": [...]
+  }
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Enterprise Section -->
+    <section class="enterprise-section" id="enterprise">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Enterprise Solutions</span>
+                <h2 class="section-title">Built for Scale</h2>
+                <p class="section-description">Enterprise-grade infrastructure, custom solutions, and dedicated support for institutions and large-scale operations.</p>
+            </div>
+            <div class="enterprise-grid">
+                <div class="enterprise-card">
+                    <div class="enterprise-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <h3>Custom Solutions</h3>
+                    <p>Tailored portfolio management solutions designed specifically for your institution's unique requirements and compliance needs.</p>
+                    <ul class="enterprise-features">
+                        <li><i class="fas fa-check"></i> Custom UI/UX design</li>
+                        <li><i class="fas fa-check"></i> White-label options</li>
+                        <li><i class="fas fa-check"></i> Custom integrations</li>
+                        <li><i class="fas fa-check"></i> Dedicated infrastructure</li>
+                    </ul>
+                    <button class="btn-enterprise" id="contactCustom">
+                        <i class="fas fa-phone"></i> Contact Sales
+                    </button>
+                </div>
+                <div class="enterprise-card">
+                    <div class="enterprise-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Security & Compliance</h3>
+                    <p>Bank-grade security with SOC 2 Type II compliance, GDPR compliance, and enterprise-level data protection.</p>
+                    <ul class="enterprise-features">
+                        <li><i class="fas fa-check"></i> SOC 2 Type II certified</li>
+                        <li><i class="fas fa-check"></i> GDPR compliant</li>
+                        <li><i class="fas fa-check"></i> End-to-end encryption</li>
+                        <li><i class="fas fa-check"></i> Zero-knowledge architecture</li>
+                    </ul>
+                    <button class="btn-enterprise" id="viewSecurity">
+                        <i class="fas fa-file-alt"></i> Security Docs
+                    </button>
+                </div>
+                <div class="enterprise-card">
+                    <div class="enterprise-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3>Premium Support</h3>
+                    <p>24/7 dedicated support with guaranteed response times, dedicated account management, and priority feature requests.</p>
+                    <ul class="enterprise-features">
+                        <li><i class="fas fa-check"></i> 24/7 priority support</li>
+                        <li><i class="fas fa-check"></i> Dedicated account manager</li>
+                        <li><i class="fas fa-check"></i> SLA guarantees</li>
+                        <li><i class="fas fa-check"></i> Priority feature requests</li>
+                    </ul>
+                    <button class="btn-enterprise" id="contactSupport">
+                        <i class="fas fa-comments"></i> Contact Support
+                    </button>
+                </div>
+            </div>
+            <div class="enterprise-cta">
+                <div class="cta-content">
+                    <h3>Ready to Scale Your Portfolio Management?</h3>
+                    <p>Join leading institutions and trading firms using ChainHive for enterprise-grade portfolio intelligence.</p>
+                    <div class="cta-buttons">
+                        <button class="btn-primary" id="scheduleDemo">
+                            <i class="fas fa-calendar"></i> Schedule Demo
+                        </button>
+                        <button class="btn-secondary" id="requestQuote">
+                            <i class="fas fa-calculator"></i> Request Quote
+                        </button>
+                    </div>
+                </div>
+                <div class="enterprise-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">99.9%</span>
+                        <span class="stat-label">Uptime SLA</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">&lt;100ms</span>
+                        <span class="stat-label">API Latency</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">24/7</span>
+                        <span class="stat-label">Support</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Enhanced Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>ChainHive</h3>
+                    <p>Enterprise-grade multi-chain portfolio intelligence powered by NODIT's Web3 infrastructure. Built for the future of decentralized finance.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Platform</h3>
+                    <a href="#">Portfolio Analytics</a>
+                    <a href="#">AI Insights</a>
+                    <a href="#">Risk Management</a>
+                    <a href="#">Real-time Alerts</a>
+                    <a href="#">NFT Tracking</a>
+                </div>
+                <div class="footer-section">
+                    <h3>Developers</h3>
+                    <a href="#">API Documentation</a>
+                    <a href="#">NODIT Integration</a>
+                    <a href="#">Webhooks</a>
+                    <a href="#">SDKs & Libraries</a>
+                    <a href="#">GraphQL</a>
+                </div>
+                <div class="footer-section">
+                    <h3>Enterprise</h3>
+                    <a href="#">Custom Solutions</a>
+                    <a href="#">White Label</a>
+                    <a href="#">SLA & Support</a>
+                    <a href="#">Security</a>
+                    <a href="#">Compliance</a>
+                </div>
+                <div class="footer-section">
+                    <h3>Community</h3>
+                    <a href="#">Discord</a>
+                    <a href="#">Twitter</a>
+                    <a href="#">Telegram</a>
+                    <a href="#">GitHub</a>
+                    <a href="#">Blog</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 ChainHive. All rights reserved. Powered by NODIT Web3 Infrastructure.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Premium Notification Container -->
+    <div id="notification" class="notification"></div>
+
+    <script src="app.js"></script>
+    <script>
+        // Enhanced scroll effects
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('header');
+            if (window.scrollY > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
 </html>

@@ -43,7 +43,7 @@
   "features": {
     "noditMCP": {
       "enabled": true,
-      "apiEndpoint": "https://api.nodit.io/v1",
+      "apiEndpoint": "https://web3.nodit.io/v1",
       "supportedChains": ["kairos"],
       "mcpAnalysis": true,
       "crossChainData": true

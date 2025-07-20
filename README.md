@@ -1,64 +1,48 @@
 
-# 🚀 ChainHive - Multi-Chain Portfolio Tracker
+# ChainHive
 
-**AI-Powered Web3 Portfolio Management with NODIT MCP Integration**
+**Professional Multi-Chain Portfolio Management Platform**
 
-ChainHive is a comprehensive multi-chain portfolio tracker that combines the power of NODIT's Web3 Data APIs with advanced AI insights through Model Context Protocol (MCP). Track your crypto assets across multiple blockchains, get intelligent recommendations, and stay informed with real-time alerts.
+ChainHive is an enterprise-grade multi-chain portfolio tracker that leverages Nodit's Web3 Data APIs to provide comprehensive blockchain analytics and portfolio management across multiple networks.
 
-## ✨ Features
+## Features
 
-### 🌐 **Multi-Chain Support**
-- **Ethereum** (ETH) - ERC-20 tokens, NFTs, DeFi positions
-- **Polygon** (MATIC) - Fast, low-cost transactions
-- **BSC** (BNB) - Binance Smart Chain ecosystem
-- **Arbitrum** - Layer 2 scaling solution
-- **Optimism** - Optimistic rollup network
-- **Aptos** (APT) - Next-generation blockchain
-- **Sui** (SUI) - High-performance blockchain
-- **XRPL** (XRP) - Enterprise blockchain solutions
-- **Solana** (SOL) - High-speed blockchain network
+### Multi-Chain Support
+- **Ethereum** - Complete ERC-20 token and NFT tracking
+- **Polygon** - High-performance Layer 2 analytics
+- **Binance Smart Chain** - BSC ecosystem monitoring
+- **Arbitrum** - Layer 2 scaling solution support
+- **Optimism** - Optimistic rollup network integration
+- **Avalanche** - High-throughput blockchain analysis
 
-### 🤖 **AI-Powered Insights**
-- **Portfolio Analysis** - Comprehensive asset breakdown and performance metrics
-- **Smart Recommendations** - AI-driven investment suggestions
-- **Risk Assessment** - Automated portfolio risk evaluation
-- **Market Opportunities** - DeFi yield farming and staking suggestions
-- **Trend Analysis** - Market sentiment and price prediction insights
+### Core Capabilities
+- **Real-time Portfolio Tracking** - Live balance updates across all supported chains
+- **Transaction History** - Comprehensive transaction analysis and categorization
+- **NFT Management** - Complete NFT portfolio visualization and valuation
+- **Multi-Chain Analytics** - Cross-chain portfolio performance metrics
+- **API Integration** - RESTful API for programmatic access
+- **Security-First Design** - Read-only access with enterprise-grade security
 
-### 📱 **Multiple Interfaces**
-- **Web Application** - Modern, responsive dashboard
-- **Telegram Bot** - Instant portfolio updates and commands
-- **REST API** - Programmatic access to all features
-- **Real-time Streams** - Live portfolio updates via WebSocket
+### Technical Features
+- **High-Performance Architecture** - Optimized for speed and reliability
+- **Rate Limiting** - Built-in API protection and throttling
+- **Caching Layer** - Redis-based caching for optimal performance
+- **Error Handling** - Comprehensive error management and logging
+- **CORS Protection** - Secure cross-origin request handling
+- **Health Monitoring** - Built-in health checks and monitoring endpoints
 
-### 🔔 **Smart Alerts & Monitoring**
-- **Price Alerts** - Custom price thresholds for any token
-- **Whale Watching** - Large transaction notifications
-- **Portfolio Changes** - Real-time balance updates
-- **Gas Fee Alerts** - Optimal transaction timing
-- **DeFi Opportunities** - New yield farming alerts
-
-### 🔐 **Security & Privacy**
-- **Web3Auth Integration** - Secure, non-custodial authentication
-- **Read-Only Access** - No private key storage required
-- **Encrypted Data** - All sensitive information encrypted
-- **Rate Limiting** - API abuse protection
-- **CORS Protection** - Secure cross-origin requests
-
-## 🚀 Quick Start
-
-### Prerequisites
+## Prerequisites
 
 - **Node.js** 16.0.0 or higher
 - **npm** 8.0.0 or higher
-- **NODIT API Key** - Get yours at [nodit.io](https://nodit.io)
-- **Telegram Bot Token** (optional) - Create via [@BotFather](https://t.me/BotFather)
+- **Nodit API Key** - Obtain from [web3.nodit.io](https://web3.nodit.io)
+- **Redis** (optional) - For caching and performance optimization
 
-### Installation
+## Installation
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/chainhive/portfolio-tracker.git
+   git clone <repository-url>
    cd chainhive
    ```
 
@@ -67,235 +51,226 @@ ChainHive is a comprehensive multi-chain portfolio tracker that combines the pow
    npm install
    ```
 
-3. **Configure environment variables**
+3. **Environment Configuration**
    ```bash
    cp .env.example .env
-   # Edit .env with your API keys and configuration
+   ```
+   
+   Configure the following required environment variables:
+   ```env
+   # Required
+   NODIT_API_KEY=your_nodit_api_key_here
+   
+   # Optional Configuration
+   NODE_ENV=production
+   PORT=3000
+   NODIT_BASE_URL=https://web3.nodit.io
+   
+   # Security
+   CORS_ALLOWED_ORIGINS=https://yourdomain.com
+   VALID_API_KEYS=your_api_keys_here
+   
+   # Performance
+   REDIS_URL=redis://localhost:6379
+   CACHE_TTL=300
+   RATE_LIMIT_MAX_REQUESTS=100
    ```
 
 4. **Start the application**
    ```bash
-   # Start web server
+   # Production
    npm start
    
-   # Or start in development mode
-   npm run server
-   
-   # Start Telegram bot (optional)
-   npm run bot
+   # Development
+   npm run dev
    ```
 
-5. **Open your browser**
-   ```
-   http://localhost:3000
-   ```
-
-## 📖 Usage Guide
-
-### 🌐 Web Application
-
-1. **Connect Your Wallet**
-   - Click "Connect Wallet" on the landing page
-   - Choose your preferred Web3Auth login method
-   - Authorize the connection
-
-2. **Add Wallet Addresses**
-   - Navigate to the "Add Wallet" section
-   - Enter wallet addresses for different chains
-   - ChainHive will automatically detect supported networks
-
-3. **View Portfolio**
-   - Real-time portfolio overview across all chains
-   - Token balances, USD values, and percentage allocations
-   - Historical performance charts and analytics
-
-4. **Get AI Insights**
-   - Click "Analyze Portfolio" for AI-powered recommendations
-   - View risk assessment and diversification suggestions
-   - Discover DeFi opportunities and yield farming options
-
-5. **Set Up Alerts**
-   - Configure price alerts for specific tokens
-   - Enable whale movement notifications
-   - Set portfolio change thresholds
-
-### 🤖 Telegram Bot
-
-1. **Start the Bot**
-   - Search for your bot on Telegram (after deployment)
-   - Send `/start` to begin
-   - Follow the setup instructions
-
-2. **Basic Commands**
-   ```
-   /start - Initialize the bot
-   /help - Show all available commands
-   /addwallet <address> - Add a wallet to track
-   /portfolio - View complete portfolio
-   /balance <chain> - Check balance on specific chain
-   /analyze - Get AI portfolio analysis
-   /price <token> - Check token price
-   /gas - View current gas fees
-   /alerts - Manage price alerts
-   /settings - Configure preferences
-   ```
-
-3. **Example Usage**
-   ```
-   /addwallet 0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b1
-   /price ETH
-   /balance ethereum
-   /analyze
-   ```
-
-## 🔧 API Documentation
+## API Documentation
 
 ### Base URL
 ```
-http://localhost:3000/api
+https://your-domain.com/api
 ```
+
+### Authentication
+All API endpoints require a valid Nodit API key. Include your API key in requests using one of these methods:
+
+- **Header**: `X-API-Key: your_api_key`
+- **Query Parameter**: `?apiKey=your_api_key`
 
 ### Endpoints
 
 #### Portfolio Management
+
+**Get Multi-Chain Portfolio**
 ```http
-GET /api/portfolio/:address
-GET /api/balance/:chain/:address
-GET /api/transactions/:chain/:address
-GET /api/nfts/:chain/:address
+GET /api/portfolio/{address}
+GET /api/portfolio/{address}?chains=ethereum,polygon,bsc
 ```
 
-#### AI Insights
+**Get Chain-Specific Balance**
 ```http
-POST /api/insights
-Content-Type: application/json
+GET /api/balance/{chain}/{address}
+```
 
+**Get Transaction History**
+```http
+GET /api/transactions/{chain}/{address}
+GET /api/transactions/{chain}/{address}?limit=50&offset=0
+```
+
+**Get NFT Portfolio**
+```http
+GET /api/nfts/{chain}/{address}
+```
+
+**Get Historical Data**
+```http
+GET /api/historical/{address}
+GET /api/historical/{address}?days=30
+```
+
+#### System Endpoints
+
+**Health Check**
+```http
+GET /api/health
+```
+
+**Market Conditions**
+```http
+GET /api/market-conditions
+```
+
+### Response Format
+
+All API responses follow a consistent format:
+
+```json
 {
-  "portfolioData": {...},
-  "preferences": {...}
+  "success": true,
+  "data": {
+    // Response data
+  },
+  "timestamp": "2024-01-01T00:00:00.000Z"
 }
 ```
 
-#### Market Data
-```http
-GET /api/prices?tokens=ETH,BTC,USDC
-GET /api/gas?chains=ethereum,polygon,bsc
+Error responses:
+```json
+{
+  "success": false,
+  "error": "Error description",
+  "message": "Detailed error message",
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
 ```
 
-#### Webhooks
-```http
-POST /api/webhooks/setup
-POST /api/webhooks/receive
-```
+## Supported Chains
 
-#### Real-time Streams
-```http
-GET /api/stream/portfolio/:address
-```
+| Chain | Chain ID | Symbol | RPC Endpoint |
+|-------|----------|--------|--------------|
+| Ethereum | 1 | ETH | `https://web3.nodit.io/v1/eth/mainnet` |
+| Polygon | 137 | MATIC | `https://web3.nodit.io/v1/polygon/mainnet` |
+| BSC | 56 | BNB | `https://web3.nodit.io/v1/bsc/mainnet` |
+| Arbitrum | 42161 | ETH | `https://web3.nodit.io/v1/arbitrum/mainnet` |
+| Optimism | 10 | ETH | `https://web3.nodit.io/v1/optimism/mainnet` |
+| Avalanche | 43114 | AVAX | `https://web3.nodit.io/v1/avalanche/mainnet` |
 
-## 🏗️ Architecture
+## Configuration
 
-### Frontend
-- **HTML/CSS/JavaScript** - Modern, responsive web interface
-- **Web3Auth** - Secure wallet connection
-- **Real-time Updates** - WebSocket integration
-- **Progressive Web App** - Mobile-friendly design
+### Environment Variables
 
-### Backend
-- **Express.js** - RESTful API server
-- **NODIT Integration** - Web3 data and MCP services
-- **Rate Limiting** - API protection and optimization
-- **Webhook Processing** - Real-time event handling
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `NODIT_API_KEY` | string | **required** | Your Nodit API key |
+| `NODIT_BASE_URL` | string | `https://web3.nodit.io` | Nodit API base URL |
+| `NODE_ENV` | string | `development` | Application environment |
+| `PORT` | number | `3000` | Server port |
+| `RATE_LIMIT_MAX_REQUESTS` | number | `100` | Max requests per window |
+| `RATE_LIMIT_WINDOW_MS` | number | `900000` | Rate limit window (15 min) |
+| `CACHE_TTL` | number | `300` | Cache TTL in seconds |
+| `REDIS_URL` | string | `''` | Redis connection URL |
+| `CORS_ALLOWED_ORIGINS` | string | `*` | Allowed CORS origins |
+| `LOG_LEVEL` | string | `info` | Logging level |
 
-### Telegram Bot
-- **Node Telegram Bot API** - Full-featured bot implementation
-- **Inline Keyboards** - Interactive command interface
-- **Real-time Notifications** - Instant portfolio updates
-- **Multi-user Support** - Concurrent user management
+### Security Configuration
 
-### NODIT MCP Integration
-- **Multi-Chain Data** - Unified API across all supported networks
-- **AI Analysis** - LLM-powered portfolio insights
-- **Real-time Streams** - Live blockchain event monitoring
-- **Webhook Events** - Automated alert system
+- **API Key Validation**: All endpoints validate API keys
+- **Rate Limiting**: Configurable rate limiting per IP/user
+- **CORS Protection**: Configurable allowed origins
+- **Request Size Limits**: Configurable payload size limits
+- **Security Headers**: Comprehensive security header implementation
 
-## 🔐 Environment Configuration
+## Performance Optimization
 
-### Required Variables
-```env
-# NODIT Configuration
-NODIT_API_KEY=your_nodit_api_key_here
+### Caching Strategy
+- **Redis Integration**: Optional Redis caching for improved performance
+- **Configurable TTL**: Adjustable cache expiration times
+- **Smart Invalidation**: Automatic cache invalidation for real-time data
 
-# Telegram Bot (Optional)
-TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
+### Rate Limiting
+- **IP-based Limiting**: Prevent API abuse
+- **User-based Limiting**: Per-user rate limiting
+- **Configurable Limits**: Adjustable rate limits per endpoint
 
-# Web3Auth
-WEB3AUTH_CLIENT_ID=your_web3auth_client_id_here
-```
+## Monitoring and Logging
 
-### Optional Variables
-```env
-# Database
-MONGODB_URI=mongodb://localhost:27017/chainhive
-REDIS_URL=redis://localhost:6379
+### Health Checks
+- **System Health**: `/api/health` endpoint for monitoring
+- **Service Dependencies**: Checks for external service availability
+- **Performance Metrics**: Response time and error rate monitoring
 
-# Security
-JWT_SECRET=your_jwt_secret_here
-ENCRYPTION_KEY=your_encryption_key_here
+### Logging
+- **Structured Logging**: JSON-formatted logs for easy parsing
+- **Configurable Levels**: Adjustable log levels (error, warn, info, debug)
+- **Request Correlation**: Unique request IDs for tracing
 
-# Feature Flags
-ENABLE_TELEGRAM_BOT=true
-ENABLE_AI_INSIGHTS=true
-ENABLE_REAL_TIME_STREAMS=true
-```
+## Testing
 
-## 🧪 Development
-
-### Running Tests
 ```bash
+# Run all tests
 npm test
+
+# Run specific test suites
+npm test tests/config/
+npm test tests/middleware/
+npm test tests/services/
+
+# Run tests with coverage
+npm run test:coverage
 ```
 
-### Development Mode
-```bash
-# Start with auto-reload
-npm run server
+## Deployment
 
-# Start Telegram bot in development
-npm run bot
-```
+### Production Deployment
 
-### Building for Production
-```bash
-npm run build
-```
+1. **Environment Setup**
+   ```bash
+   export NODE_ENV=production
+   export NODIT_API_KEY=your_production_api_key
+   export PORT=3000
+   ```
 
-### Code Quality
-```bash
-# Linting
-npm run lint
-
-# Formatting
-npm run format
-```
-
-## 🚀 Deployment
+2. **Build and Start**
+   ```bash
+   npm install --production
+   npm start
+   ```
 
 ### Docker Deployment
-```bash
-# Build image
-docker build -t chainhive .
 
-# Run container
-docker run -p 3000:3000 --env-file .env chainhive
+```dockerfile
+FROM node:16-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install --production
+COPY . .
+EXPOSE 3000
+CMD ["npm", "start"]
 ```
 
-### Cloud Deployment
-- **Vercel** - Automatic deployments from Git
-- **Heroku** - Easy scaling and management
-- **AWS/GCP/Azure** - Enterprise-grade infrastructure
-
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -303,27 +278,23 @@ docker run -p 3000:3000 --env-file .env chainhive
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Support
+## Support
 
-- **Documentation** - [docs.chainhive.io](https://docs.chainhive.io)
-- **Discord** - [discord.gg/chainhive](https://discord.gg/chainhive)
-- **Twitter** - [@ChainHiveIO](https://twitter.com/ChainHiveIO)
-- **Email** - support@chainhive.io
+For technical support and questions:
+- **Documentation**: [Nodit Documentation](https://docs.nodit.io)
+- **API Reference**: [Nodit API Reference](https://web3.nodit.io/docs)
+- **Issues**: Create an issue in this repository
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
-- **NODIT** - For providing comprehensive Web3 data APIs and MCP integration
-- **Web3Auth** - For secure, user-friendly wallet authentication
-- **Telegram** - For the robust bot platform
-- **Open Source Community** - For the amazing tools and libraries
+- **Nodit**: For providing comprehensive Web3 data APIs
+- **Contributors**: All contributors who have helped improve this project
 
 ---
 
-**Built with ❤️ by the ChainHive Team**
-
-*Empowering the next generation of Web3 portfolio management*
+**ChainHive** - Professional Multi-Chain Portfolio Management Platform
 

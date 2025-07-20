@@ -8,7 +8,7 @@ import compression from 'compression';
 import morgan from 'morgan';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { NoditService } from './nodit-service.js';
+import { NoditService } from '../nodit-service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,7 +18,11 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const NODIT_API_KEY = process.env.NODIT_API_KEY || 'demo-key';
+const NODIT_API_KEY = process.env.NODIT_API_KEY;
+
+if (!NODIT_API_KEY) {
+  throw new Error('NODIT_API_KEY environment variable is required');
+}
 
 // Initialize NODIT service
 const noditService = new NoditService(NODIT_API_KEY);
@@ -188,14 +192,27 @@ app.get('/api/nfts/:chain/:address', async (req, res) => {
 // Generate AI insights
 app.post('/api/insights', async (req, res) => {
     try {
-        const { portfolioData, preferences } = req.body;
+        const { portfolioData, preferences, address, totalValue } = req.body;
         
-        if (!portfolioData) {
-            return res.status(400).json({ error: 'Portfolio data is required' });
+        // Handle different input formats
+        let inputData = portfolioData;
+        if (!inputData && address) {
+            // Create mock portfolio data from address and totalValue
+            inputData = {
+                address,
+                totalValue: totalValue || 0,
+                chains: ['ethereum'],
+                tokens: [],
+                nfts: []
+            };
+        }
+        
+        if (!inputData) {
+            return res.status(400).json({ error: 'Portfolio data or address is required' });
         }
         
         const insights = await noditService.generatePortfolioInsights(
-            portfolioData, 
+            inputData, 
             preferences
         );
         

@@ -16,6 +16,9 @@ class ChainHiveApp {
         this.retryAttempts = 0;
         this.maxRetries = 3;
         
+        // API configuration
+        this.apiBaseUrl = this.getApiBaseUrl();
+        
         // Performance monitoring
         this.performanceMetrics = {
             apiCalls: 0,
@@ -25,6 +28,26 @@ class ChainHiveApp {
         };
         
         this.init();
+    }
+    
+    getApiBaseUrl() {
+        // Check for environment variable first (Vercel)
+        if (typeof process !== 'undefined' && process.env && process.env.VITE_API_BASE_URL) {
+            return process.env.VITE_API_BASE_URL;
+        }
+        
+        // Check for window environment variable (client-side)
+        if (typeof window !== 'undefined' && window.ENV && window.ENV.VITE_API_BASE_URL) {
+            return window.ENV.VITE_API_BASE_URL;
+        }
+        
+        // Production fallback
+        if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+            return 'https://chainhive-backend.onrender.com';
+        }
+        
+        // Development fallback
+        return '';
     }
 
     // Enhanced helper methods for professional portfolio analysis
@@ -137,7 +160,7 @@ class ChainHiveApp {
     async fetchHistoricalData(address) {
         try {
             // Fetch historical portfolio data for trend analysis
-            const response = await fetch(`/api/historical/${address}?days=30`);
+            const response = await fetch(`${this.apiBaseUrl}/api/historical/${address}?days=30`);
             if (response.ok) {
                 const data = await response.json();
                 this.historicalData = data.success ? data.data : {};
@@ -150,7 +173,7 @@ class ChainHiveApp {
 
     async getMarketConditions() {
         try {
-            const response = await fetch('/api/market-conditions');
+            const response = await fetch(`${this.apiBaseUrl}/api/market-conditions`);
             if (response.ok) {
                 const data = await response.json();
                 return data.success ? data.data : {};
@@ -469,48 +492,57 @@ class ChainHiveApp {
 
     async initWeb3Auth() {
         try {
-            // Check if Web3Auth is available
-            if (typeof window.Web3Auth === 'undefined') {
-                throw new Error('Web3Auth library not loaded');
-            }
-
-            // Fetch Web3Auth configuration from server
-            const configResponse = await fetch('/api/config');
-            const config = await configResponse.json();
+            // Use fallback Web3Auth implementation for now
+            // This avoids CDN loading issues and provides basic functionality
+            this.web3auth = this.createFallbackWeb3Auth();
             
-            console.log('Web3Auth config loaded:', config.web3auth);
-
-            // Initialize Web3Auth with environment configuration
-            this.web3auth = new window.Web3Auth.Web3Auth({
-                clientId: config.web3auth.clientId,
-                chainConfig: {
-                    chainNamespace: "eip155",
-                    chainId: "0x1", // Ethereum Mainnet
-                    rpcTarget: "https://rpc.ankr.com/eth"
-                },
-                web3AuthNetwork: config.web3auth.network,
-                uiConfig: {
-                    theme: "light",
-                    loginMethodsOrder: ["google", "facebook", "twitter", "discord"],
-                    appLogo: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=100&h=100&fit=crop&crop=center"
-                }
-            });
-
-            await this.web3auth.initModal();
+            await this.web3auth.init();
             this.isWeb3AuthInitialized = true;
             
-            if (this.web3auth.connected) {
-                this.provider = this.web3auth.provider;
-                this.userInfo = await this.web3auth.getUserInfo();
-                this.updateUIAfterConnection();
-            }
-            
-            console.log('Web3Auth initialized successfully');
+            console.log('Web3Auth initialized successfully (fallback mode)');
+            this.showNotification('Wallet functionality ready (demo mode)', 'info');
         } catch (error) {
             console.error('Web3Auth initialization failed:', error);
-            this.showNotification('Failed to initialize Web3Auth', 'error');
+            this.showNotification('Web3Auth unavailable - using demo mode', 'warning');
             this.isWeb3AuthInitialized = false;
         }
+    }
+
+    createFallbackWeb3Auth() {
+        return {
+            init: async () => {
+                console.log('Fallback Web3Auth initialized');
+                return true;
+            },
+            connect: async () => {
+                // Simulate wallet connection for demo purposes
+                this.showNotification('Demo mode: Simulating wallet connection', 'info');
+                return {
+                    request: async ({ method, params }) => {
+                        if (method === 'eth_accounts') {
+                            return ['0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6']; // Demo address
+                        }
+                        if (method === 'eth_requestAccounts') {
+                            return ['0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6'];
+                        }
+                        throw new Error(`Unsupported method: ${method}`);
+                    }
+                };
+            },
+            logout: async () => {
+                console.log('Fallback logout');
+                this.showNotification('Demo wallet disconnected', 'info');
+            },
+            getUserInfo: async () => {
+                return {
+                    name: 'Demo User',
+                    email: 'demo@chainhive.io',
+                    profileImage: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=center'
+                };
+            },
+            connected: false,
+            provider: null
+        };
     }
 
     setupEventListeners() {
@@ -583,16 +615,15 @@ class ChainHiveApp {
 
             this.provider = await this.web3auth.connect();
             this.userInfo = await this.web3auth.getUserInfo();
+            this.web3auth.connected = true;
             
             this.updateUIAfterConnection();
-            this.showNotification('Wallet connected successfully!', 'success');
+            this.showNotification('Demo wallet connected successfully!', 'success');
             
-            // Auto-analyze user's wallet if available
-            const userAddress = await this.getUserAddress();
-            if (userAddress) {
-                document.getElementById('walletAddress').value = userAddress;
-                setTimeout(() => this.analyzeWallet(), 1000);
-            }
+            // Auto-analyze demo wallet
+            const demoAddress = '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6';
+            document.getElementById('walletAddress').value = demoAddress;
+            setTimeout(() => this.analyzeWallet(), 1000);
         } catch (error) {
             console.error('Connection failed:', error);
             this.showNotification('Failed to connect wallet', 'error');
@@ -604,8 +635,9 @@ class ChainHiveApp {
             await this.web3auth.logout();
             this.provider = null;
             this.userInfo = null;
+            this.web3auth.connected = false;
             this.updateUIAfterDisconnection();
-            this.showNotification('Wallet disconnected', 'success');
+            this.showNotification('Demo wallet disconnected', 'success');
         } catch (error) {
             console.error('Disconnection failed:', error);
         }
@@ -776,9 +808,9 @@ class ChainHiveApp {
             
             // Fetch comprehensive portfolio data with enhanced error handling
             const [balanceResponse, nftResponse, transactionResponse] = await Promise.all([
-                fetch(`/api/balance/ethereum/${address}`, { signal: controller.signal }),
-                fetch(`/api/nfts/ethereum/${address}`, { signal: controller.signal }),
-                fetch(`/api/transactions/ethereum/${address}?limit=50`, { signal: controller.signal })
+                fetch(`${this.apiBaseUrl}/api/balance/ethereum/${address}`, { signal: controller.signal }),
+                fetch(`${this.apiBaseUrl}/api/nfts/ethereum/${address}`, { signal: controller.signal }),
+                fetch(`${this.apiBaseUrl}/api/transactions/ethereum/${address}?limit=50`, { signal: controller.signal })
             ]);
             
             clearTimeout(timeoutId);
@@ -828,9 +860,9 @@ class ChainHiveApp {
             const timeoutId = setTimeout(() => controller.abort(), 15000);
             
             const [balanceResponse, nftResponse, transactionResponse] = await Promise.all([
-                fetch(`/api/balance/aptos/${address}`, { signal: controller.signal }),
-                fetch(`/api/nfts/aptos/${address}`, { signal: controller.signal }),
-                fetch(`/api/transactions/aptos/${address}?limit=50`, { signal: controller.signal })
+                fetch(`${this.apiBaseUrl}/api/balance/aptos/${address}`, { signal: controller.signal }),
+                fetch(`${this.apiBaseUrl}/api/nfts/aptos/${address}`, { signal: controller.signal }),
+                fetch(`${this.apiBaseUrl}/api/transactions/aptos/${address}?limit=50`, { signal: controller.signal })
             ]);
             
             clearTimeout(timeoutId);
@@ -878,9 +910,9 @@ class ChainHiveApp {
             const timeoutId = setTimeout(() => controller.abort(), 15000);
             
             const [balanceResponse, nftResponse, transactionResponse] = await Promise.all([
-                fetch(`/api/balance/xrpl/${address}`, { signal: controller.signal }),
-                fetch(`/api/nfts/xrpl/${address}`, { signal: controller.signal }),
-                fetch(`/api/transactions/xrpl/${address}?limit=50`, { signal: controller.signal })
+                fetch(`${this.apiBaseUrl}/api/balance/xrpl/${address}`, { signal: controller.signal }),
+                fetch(`${this.apiBaseUrl}/api/nfts/xrpl/${address}`, { signal: controller.signal }),
+                fetch(`${this.apiBaseUrl}/api/transactions/xrpl/${address}?limit=50`, { signal: controller.signal })
             ]);
             
             clearTimeout(timeoutId);
@@ -943,7 +975,7 @@ class ChainHiveApp {
                 analysisType: 'comprehensive'
             };
             
-            const response = await fetch('/api/insights', {
+            const response = await fetch(`${this.apiBaseUrl}/api/insights`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

@@ -1,0 +1,778 @@
+openapi: 3.0.3
+info:
+  title: ChainHive API
+  description: |
+    ChainHive is a comprehensive multi-chain portfolio analytics platform that provides
+    real-time insights into cryptocurrency portfolios across multiple blockchain networks.
+    
+    ## Features
+    - Multi-chain portfolio tracking
+    - Real-time balance monitoring
+    - NFT portfolio analysis
+    - Transaction history
+    - AI-powered insights
+    - Market condition analysis
+    
+    ## Supported Chains
+    - Ethereum
+    - Polygon
+    - Binance Smart Chain
+    - Arbitrum
+    - Optimism
+    - Avalanche
+    
+    ## Authentication
+    API endpoints may require authentication via API key in the `X-API-Key` header.
+    
+    ## Rate Limiting
+    - General endpoints: 100 requests per minute
+    - Strict endpoints: 20 requests per minute
+    
+    Rate limit headers are included in responses:
+    - `X-RateLimit-Limit`: Request limit per window
+    - `X-RateLimit-Remaining`: Remaining requests in current window
+    - `X-RateLimit-Reset`: Time when the rate limit resets
+  version: 1.0.0
+  contact:
+    name: ChainHive Support
+    email: support@chainhive.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://chainhive.vercel.app/api
+    description: Production server
+  - url: http://localhost:3000/api
+    description: Development server
+
+paths:
+  /health:
+    get:
+      summary: Health Check
+      description: Check the health status of the API and its dependencies
+      tags:
+        - System
+      parameters:
+        - name: detailed
+          in: query
+          description: Return detailed health information
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Service is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /config:
+    get:
+      summary: Get Configuration
+      description: Retrieve public configuration settings
+      tags:
+        - System
+      responses:
+        '200':
+          description: Configuration retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfigResponse'
+
+  /market-conditions:
+    get:
+      summary: Market Conditions
+      description: Get current cryptocurrency market conditions and trends
+      tags:
+        - Market
+      responses:
+        '200':
+          description: Market conditions retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketConditionsResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /balance/{chain}/{address}:
+    get:
+      summary: Get Token Balances
+      description: Retrieve token balances for a specific address on a blockchain
+      tags:
+        - Portfolio
+      parameters:
+        - name: chain
+          in: path
+          required: true
+          description: Blockchain network
+          schema:
+            type: string
+            enum: [ethereum, polygon, bsc, arbitrum, optimism, avalanche]
+        - name: address
+          in: path
+          required: true
+          description: Wallet address
+          schema:
+            type: string
+            pattern: '^0x[a-fA-F0-9]{40}$'
+      responses:
+        '200':
+          description: Balances retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalanceResponse'
+        '400':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /nfts/{chain}/{address}:
+    get:
+      summary: Get NFT Portfolio
+      description: Retrieve NFT holdings for a specific address on a blockchain
+      tags:
+        - NFTs
+      parameters:
+        - name: chain
+          in: path
+          required: true
+          description: Blockchain network
+          schema:
+            type: string
+            enum: [ethereum, polygon, bsc, arbitrum, optimism, avalanche]
+        - name: address
+          in: path
+          required: true
+          description: Wallet address
+          schema:
+            type: string
+            pattern: '^0x[a-fA-F0-9]{40}$'
+        - name: limit
+          in: query
+          description: Maximum number of NFTs to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          description: Number of NFTs to skip
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: NFTs retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NFTResponse'
+        '400':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /transactions/{chain}/{address}:
+    get:
+      summary: Get Transaction History
+      description: Retrieve transaction history for a specific address on a blockchain
+      tags:
+        - Transactions
+      parameters:
+        - name: chain
+          in: path
+          required: true
+          description: Blockchain network
+          schema:
+            type: string
+            enum: [ethereum, polygon, bsc, arbitrum, optimism, avalanche]
+        - name: address
+          in: path
+          required: true
+          description: Wallet address
+          schema:
+            type: string
+            pattern: '^0x[a-fA-F0-9]{40}$'
+        - name: limit
+          in: query
+          description: Maximum number of transactions to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          description: Number of transactions to skip
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Transactions retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /portfolio/{address}:
+    get:
+      summary: Get Multi-Chain Portfolio
+      description: Retrieve comprehensive portfolio data across all supported chains
+      tags:
+        - Portfolio
+      parameters:
+        - name: address
+          in: path
+          required: true
+          description: Wallet address
+          schema:
+            type: string
+            pattern: '^0x[a-fA-F0-9]{40}$'
+        - name: chains
+          in: query
+          description: Comma-separated list of chains to include
+          schema:
+            type: string
+            example: "ethereum,polygon,bsc"
+      responses:
+        '200':
+          description: Portfolio retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioResponse'
+        '400':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /historical/{address}:
+    get:
+      summary: Get Historical Portfolio Data
+      description: Retrieve historical portfolio performance data
+      tags:
+        - Analytics
+      parameters:
+        - name: address
+          in: path
+          required: true
+          description: Wallet address
+          schema:
+            type: string
+            pattern: '^0x[a-fA-F0-9]{40}$'
+        - name: days
+          in: query
+          description: Number of days of historical data
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 365
+            default: 30
+      responses:
+        '200':
+          description: Historical data retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoricalResponse'
+        '400':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /insights:
+    post:
+      summary: Generate AI Insights
+      description: Generate AI-powered portfolio insights and recommendations
+      tags:
+        - Analytics
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InsightsRequest'
+      responses:
+        '200':
+          description: Insights generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsightsResponse'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, critical]
+        timestamp:
+          type: string
+          format: date-time
+        uptime:
+          type: number
+          description: Process uptime in seconds
+        version:
+          type: string
+        summary:
+          type: object
+          properties:
+            total:
+              type: integer
+            healthy:
+              type: integer
+            unhealthy:
+              type: integer
+            critical_failed:
+              type: integer
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/HealthCheck'
+
+    HealthCheck:
+      type: object
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+          enum: [healthy, unhealthy, disabled]
+        duration:
+          type: number
+        timestamp:
+          type: string
+          format: date-time
+        error:
+          type: string
+        critical:
+          type: boolean
+        data:
+          type: object
+
+    ConfigResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            supportedChains:
+              type: array
+              items:
+                type: string
+            apiVersion:
+              type: string
+            features:
+              type: object
+
+    MarketConditionsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            marketCap:
+              type: number
+            volume24h:
+              type: number
+            dominance:
+              type: object
+            fearGreedIndex:
+              type: number
+            trending:
+              type: array
+              items:
+                type: object
+
+    BalanceResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            address:
+              type: string
+            chain:
+              type: string
+            totalValue:
+              type: number
+            tokens:
+              type: array
+              items:
+                $ref: '#/components/schemas/Token'
+
+    Token:
+      type: object
+      properties:
+        symbol:
+          type: string
+        name:
+          type: string
+        address:
+          type: string
+        balance:
+          type: string
+        decimals:
+          type: integer
+        price:
+          type: number
+        value:
+          type: number
+        change24h:
+          type: number
+
+    NFTResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            address:
+              type: string
+            chain:
+              type: string
+            totalCount:
+              type: integer
+            totalValue:
+              type: number
+            nfts:
+              type: array
+              items:
+                $ref: '#/components/schemas/NFT'
+            pagination:
+              $ref: '#/components/schemas/Pagination'
+
+    NFT:
+      type: object
+      properties:
+        tokenId:
+          type: string
+        contractAddress:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        image:
+          type: string
+        collection:
+          type: string
+        rarity:
+          type: string
+        floorPrice:
+          type: number
+        lastSale:
+          type: number
+        attributes:
+          type: array
+          items:
+            type: object
+
+    TransactionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            address:
+              type: string
+            chain:
+              type: string
+            totalCount:
+              type: integer
+            transactions:
+              type: array
+              items:
+                $ref: '#/components/schemas/Transaction'
+            pagination:
+              $ref: '#/components/schemas/Pagination'
+
+    Transaction:
+      type: object
+      properties:
+        hash:
+          type: string
+        blockNumber:
+          type: integer
+        timestamp:
+          type: string
+          format: date-time
+        from:
+          type: string
+        to:
+          type: string
+        value:
+          type: string
+        gasUsed:
+          type: string
+        gasPrice:
+          type: string
+        status:
+          type: string
+        type:
+          type: string
+        tokenTransfers:
+          type: array
+          items:
+            type: object
+
+    PortfolioResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            address:
+              type: string
+            totalValue:
+              type: number
+            chains:
+              type: array
+              items:
+                type: object
+                properties:
+                  chain:
+                    type: string
+                  value:
+                    type: number
+                  tokens:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Token'
+            summary:
+              type: object
+              properties:
+                tokenCount:
+                  type: integer
+                nftCount:
+                  type: integer
+                activeChains:
+                  type: integer
+
+    HistoricalResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            address:
+              type: string
+            period:
+              type: integer
+            dataPoints:
+              type: array
+              items:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    format: date-time
+                  totalValue:
+                    type: number
+                  change:
+                    type: number
+                  changePercent:
+                    type: number
+
+    InsightsRequest:
+      type: object
+      required:
+        - address
+      properties:
+        address:
+          type: string
+          pattern: '^0x[a-fA-F0-9]{40}$'
+        chains:
+          type: array
+          items:
+            type: string
+        includeNFTs:
+          type: boolean
+          default: true
+        analysisDepth:
+          type: string
+          enum: [basic, detailed, comprehensive]
+          default: detailed
+
+    InsightsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            address:
+              type: string
+            summary:
+              type: string
+            riskScore:
+              type: number
+            diversificationScore:
+              type: number
+            recommendations:
+              type: array
+              items:
+                type: string
+            insights:
+              type: array
+              items:
+                type: object
+                properties:
+                  category:
+                    type: string
+                  title:
+                    type: string
+                  description:
+                    type: string
+                  impact:
+                    type: string
+                    enum: [low, medium, high]
+
+    Pagination:
+      type: object
+      properties:
+        limit:
+          type: integer
+        offset:
+          type: integer
+        total:
+          type: integer
+        hasMore:
+          type: boolean
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: object
+        timestamp:
+          type: string
+          format: date-time
+        correlationId:
+          type: string
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+security:
+  - ApiKeyAuth: []
+
+tags:
+  - name: System
+    description: System health and configuration endpoints
+  - name: Market
+    description: Market data and conditions
+  - name: Portfolio
+    description: Portfolio and balance management
+  - name: NFTs
+    description: NFT portfolio tracking
+  - name: Transactions
+    description: Transaction history and analysis
+  - name: Analytics
+    description: Advanced analytics and insights

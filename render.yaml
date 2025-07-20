@@ -1,0 +1,54 @@
+# Render Blueprint Configuration for ChainHive
+# This file defines the infrastructure for deploying ChainHive on Render
+
+services:
+  # Backend API Service
+  - type: web
+    name: chainhive-backend
+    env: node
+    plan: starter # Can upgrade to standard/pro for production
+    buildCommand: npm install
+    startCommand: node api/server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: NODIT_API_KEY
+        fromSecret: NODIT_API_KEY
+      - key: NODIT_API_URL
+        value: https://web3.nodit.io
+      - key: CORS_ORIGIN
+        fromSecret: FRONTEND_URL
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 900000
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: 100
+      - key: CACHE_TTL
+        value: 300
+      - key: LOG_LEVEL
+        value: info
+    
+  # Frontend Static Site
+  - type: static
+    name: chainhive-frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    pullRequestPreviewsEnabled: true
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: chainhive-backend
+          property: host
+      - key: VITE_WEB3AUTH_CLIENT_ID
+        fromSecret: WEB3AUTH_CLIENT_ID
+      - key: VITE_ENVIRONMENT
+        value: production
+
+# Environment Variables that need to be set in Render Dashboard
+# These should be added as secrets in your Render account:
+# - NODIT_API_KEY: Your NODIT API key
+# - WEB3AUTH_CLIENT_ID: Your Web3Auth client ID
+# - FRONTEND_URL: The URL of your frontend (will be provided by Render)

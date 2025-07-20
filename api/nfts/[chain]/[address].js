@@ -2,7 +2,11 @@ const { NoditService } = require('../../../nodit-service.js');
 const dotenv = require('dotenv');
 dotenv.config();
 
-const NODIT_API_KEY = process.env.NODIT_API_KEY || 'demo-key';
+const NODIT_API_KEY = process.env.NODIT_API_KEY;
+
+if (!NODIT_API_KEY) {
+  throw new Error('NODIT_API_KEY environment variable is required');
+}
 const noditService = new NoditService(NODIT_API_KEY);
 
 module.exports = async function handler(req, res) {

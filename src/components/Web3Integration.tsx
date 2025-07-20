@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { Alert, AlertDescription } from './ui/alert';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { 
+  Loader2,
   Wallet, 
   Link,
   Coins, 
@@ -15,71 +17,35 @@ import {
   ExternalLink,
   RefreshCw,
   CheckCircle,
-  XCircle
+  XCircle,
+  TrendingUp,
+  Shield,
+  Gift
 } from 'lucide-react';
-import { Web3Service, UserProfile, PortfolioSnapshot, Alert } from '@/services/web3Service';
-import { useToast } from '@/hooks/use-toast';
+import { Web3Service, UserProfile, PortfolioSnapshot, Alert as Web3Alert } from '../services/web3Service';
+import { useWeb3Auth } from '../contexts/Web3AuthContext';
 
 const Web3Integration: React.FC = () => {
-  const [isConnected, setIsConnected] = useState(false);
-  const [currentAddress, setCurrentAddress] = useState<string | null>(null);
+  const { isConnected, userAddress, isLoading, error, connectWallet, disconnectWallet, web3Service } = useWeb3Auth();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [portfolioHistory, setPortfolioHistory] = useState<PortfolioSnapshot[]>([]);
-  const [userAlerts, setUserAlerts] = useState<Alert[]>([]);
+  const [userAlerts, setUserAlerts] = useState<Web3Alert[]>([]);
   const [tokenBalance, setTokenBalance] = useState<number>(0);
   const [rewardBalance, setRewardBalance] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState(false);
+  const [localLoading, setLocalLoading] = useState(false);
   
   // Form states
   const [profileHash, setProfileHash] = useState('');
   const [alertConditions, setAlertConditions] = useState('');
   const [alertType, setAlertType] = useState<number>(1);
-  
-  const { toast } = useToast();
-  const web3Service = Web3Service.getInstance();
 
   useEffect(() => {
-    checkConnection();
-  }, []);
-
-  const checkConnection = async () => {
-    try {
-      if (web3Service.isConnected()) {
-        const address = await web3Service.getCurrentAddress();
-        if (address) {
-          setIsConnected(true);
-          setCurrentAddress(address);
-          await loadUserData(address);
-        }
-      }
-    } catch (error) {
-      console.error('Error checking connection:', error);
+    if (isConnected && userAddress) {
+      loadUserData(userAddress);
     }
-  };
+  }, [isConnected, userAddress]);
 
-  const connectWallet = async () => {
-    try {
-      setIsLoading(true);
-      const address = await web3Service.connectWallet();
-      if (address) {
-        setIsConnected(true);
-        setCurrentAddress(address);
-        await loadUserData(address);
-        toast({
-          title: "Wallet Connected",
-          description: `Connected to ${address.slice(0, 6)}...${address.slice(-4)}`,
-        });
-      }
-    } catch (error: any) {
-      toast({
-        title: "Connection Failed",
-        description: error.message,
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
 
   const loadUserData = async (address: string) => {
     try {
@@ -110,118 +76,82 @@ const Web3Integration: React.FC = () => {
 
   const registerUser = async () => {
     if (!profileHash) {
-      toast({
-        title: "Missing Information",
-        description: "Please enter a profile hash",
-        variant: "destructive"
-      });
+      console.error('Missing profile hash');
       return;
     }
 
     try {
-      setIsLoading(true);
+      setLocalLoading(true);
       const txHash = await web3Service.registerUser(profileHash);
-      toast({
-        title: "Registration Successful",
-        description: `Transaction: ${txHash.slice(0, 6)}...${txHash.slice(-4)}`,
-      });
+      console.log('User registered successfully:', txHash);
       
       // Reload user data
-      if (currentAddress) {
-        await loadUserData(currentAddress);
+      if (userAddress) {
+        await loadUserData(userAddress);
       }
     } catch (error: any) {
-      toast({
-        title: "Registration Failed",
-        description: error.message,
-        variant: "destructive"
-      });
+      console.error('Registration failed:', error.message);
     } finally {
-      setIsLoading(false);
+      setLocalLoading(false);
     }
   };
 
   const createAlert = async () => {
     if (!alertConditions) {
-      toast({
-        title: "Missing Information",
-        description: "Please enter alert conditions",
-        variant: "destructive"
-      });
+      console.error('Missing alert conditions');
       return;
     }
 
     try {
-      setIsLoading(true);
+      setLocalLoading(true);
       const result = await web3Service.createAlert(alertType, alertConditions);
-      toast({
-        title: "Alert Created",
-        description: `Alert ID: ${result.alertId}`,
-      });
+      console.log('Alert created successfully:', result.alertId);
       
       // Reload alerts
-      if (currentAddress) {
-        const alerts = await web3Service.getUserAlerts(currentAddress);
+      if (userAddress) {
+        const alerts = await web3Service.getUserAlerts(userAddress);
         setUserAlerts(alerts);
       }
       setAlertConditions('');
     } catch (error: any) {
-      toast({
-        title: "Alert Creation Failed",
-        description: error.message,
-        variant: "destructive"
-      });
+      console.error('Alert creation failed:', error.message);
     } finally {
-      setIsLoading(false);
+      setLocalLoading(false);
     }
   };
 
   const claimRewards = async () => {
     try {
-      setIsLoading(true);
+      setLocalLoading(true);
       const txHash = await web3Service.claimRewards();
-      toast({
-        title: "Rewards Claimed",
-        description: `Transaction: ${txHash.slice(0, 6)}...${txHash.slice(-4)}`,
-      });
+      console.log('Rewards claimed successfully:', txHash);
       
       // Reload balances
-      if (currentAddress) {
-        const rewardBal = await web3Service.getRewardBalance(currentAddress);
+      if (userAddress) {
+        const rewardBal = await web3Service.getRewardBalance(userAddress);
         setRewardBalance(rewardBal);
       }
     } catch (error: any) {
-      toast({
-        title: "Claim Failed",
-        description: error.message,
-        variant: "destructive"
-      });
+      console.error('Claim failed:', error.message);
     } finally {
-      setIsLoading(false);
+      setLocalLoading(false);
     }
   };
 
   const purchaseSubscription = async (tier: number) => {
     try {
-      setIsLoading(true);
+      setLocalLoading(true);
       const txHash = await web3Service.purchaseSubscription(tier);
-      toast({
-        title: "Subscription Purchased",
-        description: `Transaction: ${txHash.slice(0, 6)}...${txHash.slice(-4)}`,
-      });
+      console.log('Subscription purchased successfully:', txHash);
       
       // Reload user profile
-      if (currentAddress) {
-        await loadUserData(currentAddress);
+      if (userAddress) {
+        await loadUserData(userAddress);
       }
     } catch (error: any) {
-      toast({
-        title: "Purchase Failed",
-        description: error.message,
-        variant: "destructive"
-      });
+      console.error('Purchase failed:', error.message);
     } finally {
-      setIsLoading(false);
+      setLocalLoading(false);
     }
   };
 
@@ -295,7 +225,7 @@ const Web3Integration: React.FC = () => {
           <div className="text-center p-4 rounded-lg glass-subtle">
             <p className="text-muted-foreground text-sm">Wallet Address</p>
             <p className="font-mono text-sm text-foreground">
-              {currentAddress?.slice(0, 6)}...{currentAddress?.slice(-4)}
+              {userAddress?.slice(0, 6)}...{userAddress?.slice(-4)}
             </p>
           </div>
           <div className="text-center p-4 rounded-lg glass-subtle">
@@ -361,14 +291,14 @@ const Web3Integration: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
                   <Button
                     onClick={() => purchaseSubscription(1)}
-                    disabled={isLoading || userProfile.subscriptionTier >= 1}
+                    disabled={localLoading || userProfile.subscriptionTier >= 1}
                     variant="gradient"
                   >
                     Upgrade to Pro (50 HIVE)
                   </Button>
                   <Button
                     onClick={() => purchaseSubscription(2)}
-                    disabled={isLoading || userProfile.subscriptionTier >= 2}
+                    disabled={localLoading || userProfile.subscriptionTier >= 2}
                     variant="gradient"
                   >
                     Upgrade to Enterprise (200 HIVE)
@@ -390,8 +320,8 @@ const Web3Integration: React.FC = () => {
                     className="glass"
                   />
                 </div>
-                <Button onClick={registerUser} disabled={isLoading} variant="gradient">
-                  {isLoading ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : null}
+                <Button onClick={registerUser} disabled={localLoading} variant="gradient">
+                  {localLoading ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : null}
                   Register User
                 </Button>
               </div>
@@ -467,8 +397,8 @@ const Web3Integration: React.FC = () => {
                   />
                 </div>
               </div>
-              <Button onClick={createAlert} disabled={isLoading} variant="gradient">
-                {isLoading ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : null}
+              <Button onClick={createAlert} disabled={localLoading} variant="gradient">
+                {localLoading ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : null}
                 Create Alert
               </Button>
             </div>
@@ -522,11 +452,11 @@ const Web3Integration: React.FC = () => {
                 
                 <Button
                   onClick={claimRewards}
-                  disabled={isLoading || rewardBalance === 0}
+                  disabled={localLoading || rewardBalance === 0}
                   variant="gradient"
                   className="w-full"
                 >
-                  {isLoading ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : null}
+                  {localLoading ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : null}
                   Claim Rewards
                 </Button>
               </div>

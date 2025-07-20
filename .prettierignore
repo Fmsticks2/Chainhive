@@ -1,0 +1,189 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Production builds
+build/
+dist/
+out/
+
+# Coverage reports
+coverage/
+.nyc_output/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Cache directories
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+.vuepress/dist/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Generated documentation
+docs/build/
+docs/.docusaurus/
+
+# Temporary files
+tmp/
+temp/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Compiled files
+*.min.js
+*.min.css
+
+# Vendor files
+vendor/
+third-party/
+
+# Auto-generated files
+*.generated.js
+*.generated.ts
+*.generated.json
+
+# Configuration files that shouldn't be formatted
+.eslintrc.js
+babel.config.js
+webpack.config.js
+vite.config.js
+rollup.config.js
+
+# Lock files
+*.lock
+
+# Binary files
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.svg
+*.woff
+*.woff2
+*.ttf
+*.eot
+*.pdf
+
+# Archive files
+*.zip
+*.tar.gz
+*.rar
+
+# Test fixtures
+__fixtures__/
+__mocks__/
+
+# Storybook
+.storybook/
+storybook-static/
+
+# Cypress
+cypress/videos/
+cypress/screenshots/
+
+# Playwright
+test-results/
+playwright-report/
+
+# Husky
+.husky/
+
+# Local development files
+.local
+*.local
+
+# Blockchain specific
+*.sol
+*.vy
+*.cairo
+
+# API documentation
+api-docs/
+swagger-ui/
+
+# Certificates
+*.pem
+*.key
+*.crt
+*.cert
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Kubernetes
+*.yaml
+*.yml
+
+# Terraform
+*.tf
+*.tfvars
+*.tfstate
+*.tfstate.backup
+
+# GitHub
+.github/
+
+# GitLab
+.gitlab-ci.yml
+
+# Vercel
+.vercel/
+vercel.json
+
+# Netlify
+.netlify/
+netlify.toml
+
+# AWS
+.aws/
+
+# Google Cloud
+.gcloud/
+
+# Azure
+.azure/

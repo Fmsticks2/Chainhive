@@ -11,7 +11,7 @@ echo "📋 NPM version: $(npm --version)"
 
 # Install dependencies
 echo "📦 Installing dependencies..."
-npm ci --only=production
+npm ci --only=production --legacy-peer-deps
 
 # Create public directory if it doesn't exist
 mkdir -p public

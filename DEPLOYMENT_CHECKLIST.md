@@ -32,8 +32,8 @@
 - [ ] Repository connected to Render
 - [ ] Service name: `chainhive-backend`
 - [ ] Environment: Node.js
-- [ ] Build command: `npm install --production`
-- [ ] Start command: `npm run start:prod`
+- [ ] Build command: `npm ci --only=production --legacy-peer-deps`
+- [ ] Start command: `node api/server.js`
 
 ### ✅ Environment Variables Set
 - [ ] `NODE_ENV=production`

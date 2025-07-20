@@ -39,8 +39,8 @@ services:
     name: chainhive-backend
     env: node
     plan: starter
-    buildCommand: npm install --production
-    startCommand: npm run start:prod
+    buildCommand: npm ci --only=production --legacy-peer-deps
+    startCommand: node api/server.js
     envVars:
       - key: NODE_ENV
         value: production

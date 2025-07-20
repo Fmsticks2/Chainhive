@@ -7,7 +7,7 @@ services:
     name: chainhive-backend
     env: node
     plan: starter # Can upgrade to standard/pro for production
-    buildCommand: npm install
+    buildCommand: npm ci --only=production --legacy-peer-deps
     startCommand: node api/server.js
     healthCheckPath: /api/health
     envVars:

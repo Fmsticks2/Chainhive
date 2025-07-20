@@ -10,9 +10,10 @@ class NoditService {
     constructor(apiKey, options = {}) {
         this.apiKey = apiKey;
         this.baseUrl = options.baseUrl || 'https://web3.nodit.io/v1';
-        this.mcpEndpoint = options.mcpEndpoint || 'https://mcp.nodit.io';
-        this.webhookEndpoint = options.webhookEndpoint || 'https://webhooks.nodit.io';
-        this.streamEndpoint = options.streamEndpoint || 'wss://stream.nodit.io';
+        // MCP functionality is integrated into the main web3.nodit.io API
+        // Webhook and streaming functionality integrated into main API
+        this.webhookEndpoint = options.webhookEndpoint || `${this.baseUrl}/webhooks`;
+        this.streamEndpoint = options.streamEndpoint || `wss://web3.nodit.io/stream`;
         
         // Supported chains
         this.supportedChains = {
@@ -592,7 +593,8 @@ class NoditService {
     }
     
     async makeMCPRequest(endpoint, payload) {
-        const url = `${this.mcpEndpoint}${endpoint}`;
+        // MCP functionality is integrated into the main web3.nodit.io API
+        const url = `${this.baseUrl}${endpoint}`;
         
         try {
             const response = await fetch(url, {
@@ -600,7 +602,7 @@ class NoditService {
                 headers: {
                     'Content-Type': 'application/json',
                     'X-API-KEY': this.apiKey,
-                    'X-MCP-Version': '1.0'
+                    'User-Agent': 'ChainHive/1.0.0'
                 },
                 body: JSON.stringify(payload)
             });

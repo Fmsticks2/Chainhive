@@ -236,11 +236,13 @@ curl https://chainhive-backend.onrender.com/api/market-conditions
 - Verify `VITE_API_BASE_URL` in Vercel
 - Check backend service status in Render
 - Test direct API endpoints
+- Health check endpoint: `/health` should return `{"status": "healthy"}`
+- If health checks fail, verify server is running on correct PORT
 
 **Build Failures**
 - Check build logs in respective dashboards
 - Verify all dependencies in `package.json`
-- Check Node.js version compatibility
+- Check Node.js version compatibility (18+)
 
 **Environment Variables Not Working**
 - Verify variable names exactly match

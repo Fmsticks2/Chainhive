@@ -154,12 +154,17 @@ HEALTH_CHECK_PATH=/health
 After deployment, verify your backend:
 
 ```bash
-# Check health endpoint
+# Check health endpoint (primary)
 curl https://your-backend-url.onrender.com/health
+
+# Check alternative health endpoint
+curl https://your-backend-url.onrender.com/api/health
 
 # Test API endpoints
 curl https://your-backend-url.onrender.com/api/config
 ```
+
+**Note**: The server provides both `/health` and `/api/health` endpoints for health checks. Render will automatically use these endpoints to monitor service health.
 
 ## Frontend Deployment on Vercel
 

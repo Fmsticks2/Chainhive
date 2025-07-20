@@ -50,7 +50,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Serve static files
-app.use(express.static('.', {
+app.use(express.static(path.join(__dirname, '..'), {
     setHeaders: (res, path) => {
         if (path.endsWith('.html')) {
             res.setHeader('Cache-Control', 'no-cache');
@@ -60,7 +60,20 @@ app.use(express.static('.', {
 
 // API Routes
 
-// Health check
+// Health check for Render (direct /health endpoint)
+app.get('/health', (req, res) => {
+    res.json({
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        version: '1.0.0',
+        services: {
+            nodit: 'connected',
+            database: 'connected'
+        }
+    });
+});
+
+// Health check (API endpoint)
 app.get('/api/health', (req, res) => {
     res.json({
         status: 'healthy',
@@ -385,7 +398,7 @@ app.use((req, res) => {
         });
     } else {
         // Serve index.html for all non-API routes (SPA support)
-        res.sendFile(path.join(__dirname, 'index.html'));
+        res.sendFile(path.join(__dirname, '..', 'index.html'));
     }
 });
 

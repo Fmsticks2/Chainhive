@@ -48,7 +48,7 @@
       ]
     },
     {
-      "source": "/**/*.js",
+      "source": "/(.*)\\.js$",
       "headers": [
         {
           "key": "Cache-Control",
@@ -57,7 +57,7 @@
       ]
     },
     {
-      "source": "/**/*.css",
+      "source": "/(.*)\\.css$",
       "headers": [
         {
           "key": "Cache-Control",
@@ -66,7 +66,7 @@
       ]
     },
     {
-      "source": "/**/*.{ico,png,jpg,jpeg,gif,svg,woff,woff2,ttf,eot}",
+      "source": "/(.*)\\.(ico|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)$",
       "headers": [
         {
           "key": "Cache-Control",
@@ -95,6 +95,15 @@
   "env": {
     "NODE_ENV": "production",
     "VITE_API_BASE_URL": "https://chainhive-backend.onrender.com",
-    "VITE_WEB3AUTH_CLIENT_ID": "BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4I70WhZDvIDnfcubVDT8fOiuQ"
+    "VITE_WEB3AUTH_CLIENT_ID": "BGoxVrMZQQmk4OjKokOvZ3Vnq9wCiESRCEZJkoZq20hmDUEXS_26ZRgl0hpi8uMH-F6YgtRAM4WooDjj_efhsVA",
+    "VITE_KAIROS_CHAIN_ID": "1001",
+    "VITE_KAIROS_RPC_URL": "https://public-en-kairos.node.kaia.io",
+    "VITE_KAIROS_EXPLORER_URL": "https://kairoscan.io",
+    "VITE_CHAINHIVE_CONTRACT_ADDRESS": "0x76069a57EFaf234E18195756fe580E7064884A46",
+    "VITE_CHAINHIVE_TOKEN_ADDRESS": "0xC34571EF2deF39aF6e1b7F072740061CBc1ec421",
+    "VITE_CHAINHIVE_MULTICHAIN_ADDRESS": "0xf93Cf0AB9b60967368714f7d8BB6A48c0034ACD2",
+    "VITE_CHAINHIVE_GOVERNANCE_ADDRESS": "0x0601ED877D78dc4BE53cDd25A0dAfF3F6d261640",
+    "IPFS_GATEWAY_URL": "https://ipfs.io/ipfs/",
+    "WEB3AUTH_NETWORK": "sapphire_devnet"
   }
 }

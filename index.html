@@ -11,9 +11,14 @@
     <link rel="apple-touch-icon" href="/logo.svg">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <!-- Web3Auth and other libraries will be loaded via local modules -->
+    <!-- Web3Auth and other libraries loaded via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Web3Auth CDN Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@web3auth/modal@10.0.5/dist/modal.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@web3auth/base@9.7.0/dist/base.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@web3auth/ethereum-provider@9.7.0/dist/ethereumProvider.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@web3auth/openlogin-adapter@8.12.4/dist/openloginAdapter.umd.min.js"></script>
     <style>
         :root {
             --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -1348,7 +1353,7 @@
         }
 
         .risk-breakdown {
-            space-y: 1rem;
+            margin-bottom: 1rem;
         }
 
         .risk-item {

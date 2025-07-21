@@ -41,12 +41,7 @@ class ChainHiveApp {
             return window.ENV.VITE_API_BASE_URL;
         }
         
-        // Production fallback
-        if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
-            return 'https://chainhive-backend.onrender.com';
-        }
-        
-        // Development fallback
+        // Use mock data when backend is unavailable
         return '';
     }
 
@@ -492,19 +487,20 @@ class ChainHiveApp {
 
     async initWeb3Auth() {
         try {
-            // Use fallback Web3Auth implementation for now
-            // This avoids CDN loading issues and provides basic functionality
-            this.web3auth = this.createFallbackWeb3Auth();
-            
-            await this.web3auth.init();
+            // Import and initialize real Web3Auth
+            const { initWeb3Auth } = await import('./web3auth-config.js');
+            this.web3auth = await initWeb3Auth();
             this.isWeb3AuthInitialized = true;
             
-            console.log('Web3Auth initialized successfully (fallback mode)');
-            this.showNotification('Wallet functionality ready (demo mode)', 'info');
+            console.log('Web3Auth initialized successfully');
+            this.showNotification('Wallet functionality ready', 'info');
         } catch (error) {
             console.error('Web3Auth initialization failed:', error);
+            // Fallback to demo mode only if Web3Auth fails
+            this.web3auth = this.createFallbackWeb3Auth();
+            await this.web3auth.init();
+            this.isWeb3AuthInitialized = true;
             this.showNotification('Web3Auth unavailable - using demo mode', 'warning');
-            this.isWeb3AuthInitialized = false;
         }
     }
 
@@ -615,15 +611,19 @@ class ChainHiveApp {
 
             this.provider = await this.web3auth.connect();
             this.userInfo = await this.web3auth.getUserInfo();
-            this.web3auth.connected = true;
             
-            this.updateUIAfterConnection();
-            this.showNotification('Demo wallet connected successfully!', 'success');
+            // Get the actual wallet address
+            const userAddress = await this.getUserAddress();
             
-            // Auto-analyze demo wallet
-            const demoAddress = '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6';
-            document.getElementById('walletAddress').value = demoAddress;
-            setTimeout(() => this.analyzeWallet(), 1000);
+            this.updateUIAfterConnection(userAddress);
+            
+            if (userAddress) {
+                this.showNotification(`Wallet connected: ${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`, 'success');
+                // Set the wallet address in the input field
+                document.getElementById('walletAddress').value = userAddress;
+            } else {
+                this.showNotification('Wallet connected successfully!', 'success');
+            }
         } catch (error) {
             console.error('Connection failed:', error);
             this.showNotification('Failed to connect wallet', 'error');
@@ -635,9 +635,8 @@ class ChainHiveApp {
             await this.web3auth.logout();
             this.provider = null;
             this.userInfo = null;
-            this.web3auth.connected = false;
             this.updateUIAfterDisconnection();
-            this.showNotification('Demo wallet disconnected', 'success');
+            this.showNotification('Wallet disconnected', 'success');
         } catch (error) {
             console.error('Disconnection failed:', error);
         }
@@ -647,6 +646,7 @@ class ChainHiveApp {
         if (!this.provider) return null;
         
         try {
+            // Use ethers v5 syntax (loaded via CDN)
             const ethersProvider = new ethers.providers.Web3Provider(this.provider);
             const signer = ethersProvider.getSigner();
             return await signer.getAddress();
@@ -682,8 +682,14 @@ class ChainHiveApp {
         }
     }
 
-    updateUIAfterConnection() {
+    updateUIAfterConnection(userAddress = null) {
         this.updateConnectButtonState('connected');
+        
+        // Update the connect button to show wallet address if available
+        if (userAddress) {
+            const connectBtn = document.getElementById('connectWallet');
+            connectBtn.innerHTML = `<i class="fas fa-wallet"></i> ${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
+        }
     }
 
     updateUIAfterDisconnection() {

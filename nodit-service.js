@@ -184,45 +184,57 @@ class NoditService {
     }
     
     async getNFTPortfolio(address, chain) {
-        const endpoint = `/v1/${chain}/address/${address}/nfts`;
-        const response = await this.makeRequest(endpoint);
-        
-        return response.nfts.map(nft => ({
-            tokenId: nft.token_id,
-            contractAddress: nft.contract_address,
-            name: nft.name,
-            description: nft.description,
-            image: nft.image_url,
-            collection: {
-                name: nft.collection_name,
-                slug: nft.collection_slug,
-                verified: nft.collection_verified
-            },
-            metadata: nft.metadata,
-            lastSale: nft.last_sale,
-            floorPrice: nft.floor_price,
-            estimatedValue: nft.estimated_value
-        }));
+        try {
+            const endpoint = `/v1/${chain}/address/${address}/nfts`;
+            const response = await this.makeRequest(endpoint);
+            
+            return response.nfts.map(nft => ({
+                tokenId: nft.token_id,
+                contractAddress: nft.contract_address,
+                name: nft.name,
+                description: nft.description,
+                image: nft.image_url,
+                collection: {
+                    name: nft.collection_name,
+                    slug: nft.collection_slug,
+                    verified: nft.collection_verified
+                },
+                metadata: nft.metadata,
+                lastSale: nft.last_sale,
+                floorPrice: nft.floor_price,
+                estimatedValue: nft.estimated_value
+            }));
+        } catch (error) {
+            console.warn(`NFT data not available for ${chain}:`, error.message);
+            // Return empty array for unsupported chains
+            return [];
+        }
     }
     
     async getRecentTransactions(address, chain, limit = 50) {
-        const endpoint = `/v1/${chain}/address/${address}/transactions?limit=${limit}`;
-        const response = await this.makeRequest(endpoint);
-        
-        return response.transactions.map(tx => ({
-            hash: tx.hash,
-            blockNumber: tx.block_number,
-            timestamp: tx.timestamp,
-            from: tx.from,
-            to: tx.to,
-            value: tx.value,
-            valueFormatted: this.formatBalance(tx.value, 18),
-            gasUsed: tx.gas_used,
-            gasPrice: tx.gas_price,
-            status: tx.status,
-            type: tx.type,
-            tokenTransfers: tx.token_transfers || []
-        }));
+        try {
+            const endpoint = `/v1/${chain}/address/${address}/transactions?limit=${limit}`;
+            const response = await this.makeRequest(endpoint);
+            
+            return response.transactions.map(tx => ({
+                hash: tx.hash,
+                blockNumber: tx.block_number,
+                timestamp: tx.timestamp,
+                from: tx.from,
+                to: tx.to,
+                value: tx.value,
+                valueFormatted: this.formatBalance(tx.value, 18),
+                gasUsed: tx.gas_used,
+                gasPrice: tx.gas_price,
+                status: tx.status,
+                type: tx.type,
+                tokenTransfers: tx.token_transfers || []
+            }));
+        } catch (error) {
+            console.warn(`Transaction history not available for ${chain}:`, error.message);
+            // Return empty array for unsupported chains
+            return [];
+        }
     }
 
     // ==================== MCP AI ANALYSIS ====================

@@ -1,62 +1,71 @@
 // Web3Auth Configuration Module
-// This replaces the CDN-loaded Web3Auth library
+// Uses global Web3Auth objects loaded via CDN
 
-import { Web3Auth } from '@web3auth/modal';
-import { CHAIN_NAMESPACES } from '@web3auth/base';
-import { EthereumPrivateKeyProvider } from '@web3auth/ethereum-provider';
-import { OpenloginAdapter } from '@web3auth/openlogin-adapter';
+// Access global Web3Auth objects
+const { Web3Auth } = window.Web3authModal || {};
+const { CHAIN_NAMESPACES } = window.Web3authBase || {};
+const { EthereumPrivateKeyProvider } = window.Web3authEthereumProvider || {};
+const { OpenloginAdapter } = window.Web3authOpenloginAdapter || {};
 
 // Web3Auth configuration
-const clientId = import.meta.env.VITE_WEB3AUTH_CLIENT_ID || 'BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ';
+const clientId = 'BGoxVrMZQQmk4OjKokOvZ3Vnq9wCiESRCEZJkoZq20hmDUEXS_26ZRgl0hpi8uMH-F6YgtRAM4WooDjj_efhsVA';
 
-const chainConfig = {
-  chainNamespace: CHAIN_NAMESPACES.EIP155,
-  chainId: '0x1', // Ethereum Mainnet
-  rpcTarget: 'https://rpc.ankr.com/eth',
-  displayName: 'Ethereum Mainnet',
-  blockExplorer: 'https://etherscan.io',
-  ticker: 'ETH',
-  tickerName: 'Ethereum',
-};
-
-const privateKeyProvider = new EthereumPrivateKeyProvider({
-  config: { chainConfig },
-});
-
-const web3auth = new Web3Auth({
-  clientId,
-  web3AuthNetwork: 'sapphire_mainnet', // Use 'testnet' for testing
-  privateKeyProvider,
-  uiConfig: {
-    appName: 'ChainHive',
-    appUrl: 'https://chainhive.io',
-    logoLight: 'https://chainhive.io/logo-light.png',
-    logoDark: 'https://chainhive.io/logo-dark.png',
-    defaultLanguage: 'en',
-    mode: 'auto',
-    theme: {
-      primary: '#667eea',
-    },
-  },
-});
-
-const openloginAdapter = new OpenloginAdapter({
-  adapterSettings: {
-    uxMode: 'popup',
-    whiteLabel: {
-      appName: 'ChainHive',
-      appUrl: 'https://chainhive.io',
-      logoLight: 'https://chainhive.io/logo-light.png',
-      logoDark: 'https://chainhive.io/logo-dark.png',
-    },
-  },
-});
-
-web3auth.configureAdapter(openloginAdapter);
+// Web3Auth instance will be created in initWeb3Auth
+let web3auth = null;
 
 // Initialize Web3Auth
 export const initWeb3Auth = async () => {
   try {
+    // Check if Web3Auth objects are available
+    if (!Web3Auth || !CHAIN_NAMESPACES || !EthereumPrivateKeyProvider || !OpenloginAdapter) {
+      throw new Error('Web3Auth CDN scripts not loaded properly');
+    }
+    
+    const chainConfig = {
+      chainNamespace: CHAIN_NAMESPACES.EIP155,
+      chainId: '0x1', // Ethereum Mainnet
+      rpcTarget: 'https://rpc.ankr.com/eth',
+      displayName: 'Ethereum Mainnet',
+      blockExplorer: 'https://etherscan.io',
+      ticker: 'ETH',
+      tickerName: 'Ethereum',
+    };
+    
+    const privateKeyProvider = new EthereumPrivateKeyProvider({
+      config: { chainConfig },
+    });
+    
+    web3auth = new Web3Auth({
+      clientId,
+      web3AuthNetwork: 'sapphire_devnet', // Use devnet for testing
+      privateKeyProvider,
+      uiConfig: {
+        appName: 'ChainHive',
+        appUrl: 'https://chainhive.io',
+        logoLight: 'https://chainhive.io/logo-light.png',
+        logoDark: 'https://chainhive.io/logo-dark.png',
+        defaultLanguage: 'en',
+        mode: 'auto',
+        theme: {
+          primary: '#667eea',
+        },
+      },
+    });
+    
+    const openloginAdapter = new OpenloginAdapter({
+      adapterSettings: {
+        uxMode: 'popup',
+        whiteLabel: {
+          appName: 'ChainHive',
+          appUrl: 'https://chainhive.io',
+          logoLight: 'https://chainhive.io/logo-light.png',
+          logoDark: 'https://chainhive.io/logo-dark.png',
+        },
+      },
+    });
+    
+    web3auth.configureAdapter(openloginAdapter);
+    
     await web3auth.init();
     console.log('Web3Auth initialized successfully');
     return web3auth;
@@ -72,6 +81,9 @@ export { web3auth };
 // Helper functions
 export const connectWallet = async () => {
   try {
+    if (!web3auth) {
+      throw new Error('Web3Auth not initialized');
+    }
     const provider = await web3auth.connect();
     return provider;
   } catch (error) {
@@ -82,6 +94,9 @@ export const connectWallet = async () => {
 
 export const disconnectWallet = async () => {
   try {
+    if (!web3auth) {
+      throw new Error('Web3Auth not initialized');
+    }
     await web3auth.logout();
     console.log('Wallet disconnected');
   } catch (error) {
@@ -92,6 +107,9 @@ export const disconnectWallet = async () => {
 
 export const getUserInfo = async () => {
   try {
+    if (!web3auth) {
+      return null;
+    }
     const userInfo = await web3auth.getUserInfo();
     return userInfo;
   } catch (error) {
@@ -101,11 +119,11 @@ export const getUserInfo = async () => {
 };
 
 export const getProvider = () => {
-  return web3auth.provider;
+  return web3auth ? web3auth.provider : null;
 };
 
 export const isConnected = () => {
-  return web3auth.connected;
+  return web3auth ? web3auth.connected : false;
 };
 
 // Fallback for environments where Web3Auth modules are not available

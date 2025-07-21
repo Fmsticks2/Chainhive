@@ -1,11 +1,15 @@
 // Web3Auth Configuration Module
 // Uses global Web3Auth objects loaded via CDN
 
-// Access global Web3Auth objects
-const { Web3Auth } = window.Web3authModal || {};
-const { CHAIN_NAMESPACES } = window.Web3authBase || {};
-const { EthereumPrivateKeyProvider } = window.Web3authEthereumProvider || {};
-const { OpenloginAdapter } = window.Web3authOpenloginAdapter || {};
+// Access global Web3Auth objects with fallback
+const getWeb3AuthObjects = () => {
+  return {
+    Web3Auth: window.Web3authModal?.Web3Auth,
+    CHAIN_NAMESPACES: window.Web3authBase?.CHAIN_NAMESPACES,
+    EthereumPrivateKeyProvider: window.Web3authEthereumProvider?.EthereumPrivateKeyProvider,
+    OpenloginAdapter: window.Web3authOpenloginAdapter?.OpenloginAdapter
+  };
+};
 
 // Web3Auth configuration
 const clientId = 'BGoxVrMZQQmk4OjKokOvZ3Vnq9wCiESRCEZJkoZq20hmDUEXS_26ZRgl0hpi8uMH-F6YgtRAM4WooDjj_efhsVA';
@@ -16,6 +20,9 @@ let web3auth = null;
 // Initialize Web3Auth
 export const initWeb3Auth = async () => {
   try {
+    // Get Web3Auth objects
+    const { Web3Auth, CHAIN_NAMESPACES, EthereumPrivateKeyProvider, OpenloginAdapter } = getWeb3AuthObjects();
+    
     // Check if Web3Auth objects are available
     if (!Web3Auth || !CHAIN_NAMESPACES || !EthereumPrivateKeyProvider || !OpenloginAdapter) {
       throw new Error('Web3Auth CDN scripts not loaded properly');

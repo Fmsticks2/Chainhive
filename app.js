@@ -477,7 +477,12 @@ class ChainHiveApp {
     }
 
     async init() {
+        console.log('Initializing ChainHive...');
         this.updateConnectButtonState('initializing');
+        
+        // Wait for Web3Auth scripts to load
+        await this.waitForWeb3AuthScripts();
+        
         await this.initWeb3Auth();
         this.updateConnectButtonState('ready');
         this.setupEventListeners();
@@ -485,15 +490,37 @@ class ChainHiveApp {
         console.log('ChainHive initialized successfully');
     }
 
+    async waitForWeb3AuthScripts() {
+        const maxWaitTime = 10000; // 10 seconds
+        const checkInterval = 100; // 100ms
+        let waitTime = 0;
+        
+        while (waitTime < maxWaitTime) {
+            if (window.Web3authModal && window.Web3authBase && window.Web3authEthereumProvider && window.Web3authOpenloginAdapter) {
+                console.log('Web3Auth scripts loaded successfully');
+                return;
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, checkInterval));
+            waitTime += checkInterval;
+        }
+        
+        console.warn('Web3Auth scripts did not load within timeout period');
+    }
+
     async initWeb3Auth() {
         try {
-            // Import and initialize real Web3Auth
-            const { initWeb3Auth } = await import('./web3auth-config.js');
-            this.web3auth = await initWeb3Auth();
-            this.isWeb3AuthInitialized = true;
-            
-            console.log('Web3Auth initialized successfully');
-            this.showNotification('Wallet functionality ready', 'info');
+            // Check if Web3Auth objects are available globally
+            if (window.Web3authModal && window.Web3authBase && window.Web3authEthereumProvider && window.Web3authOpenloginAdapter) {
+                // Initialize Web3Auth directly
+                this.web3auth = await this.initWeb3AuthDirect();
+                this.isWeb3AuthInitialized = true;
+                
+                console.log('Web3Auth initialized successfully');
+                this.showNotification('Wallet functionality ready', 'info');
+            } else {
+                throw new Error('Web3Auth CDN scripts not loaded');
+            }
         } catch (error) {
             console.error('Web3Auth initialization failed:', error);
             // Fallback to demo mode only if Web3Auth fails
@@ -501,6 +528,69 @@ class ChainHiveApp {
             await this.web3auth.init();
             this.isWeb3AuthInitialized = true;
             this.showNotification('Web3Auth unavailable - using demo mode', 'warning');
+        }
+    }
+
+    async initWeb3AuthDirect() {
+        try {
+            // Access global Web3Auth objects
+            const { Web3Auth } = window.Web3authModal;
+            const { CHAIN_NAMESPACES } = window.Web3authBase;
+            const { EthereumPrivateKeyProvider } = window.Web3authEthereumProvider;
+            const { OpenloginAdapter } = window.Web3authOpenloginAdapter;
+            
+            const clientId = 'BGoxVrMZQQmk4OjKokOvZ3Vnq9wCiESRCEZJkoZq20hmDUEXS_26ZRgl0hpi8uMH-F6YgtRAM4WooDjj_efhsVA';
+            
+            const chainConfig = {
+                chainNamespace: CHAIN_NAMESPACES.EIP155,
+                chainId: '0x1', // Ethereum Mainnet
+                rpcTarget: 'https://rpc.ankr.com/eth',
+                displayName: 'Ethereum Mainnet',
+                blockExplorer: 'https://etherscan.io',
+                ticker: 'ETH',
+                tickerName: 'Ethereum',
+            };
+            
+            const privateKeyProvider = new EthereumPrivateKeyProvider({
+                config: { chainConfig },
+            });
+            
+            const web3auth = new Web3Auth({
+                clientId,
+                web3AuthNetwork: 'sapphire_devnet',
+                privateKeyProvider,
+                uiConfig: {
+                    appName: 'ChainHive',
+                    appUrl: 'https://chainhive.io',
+                    logoLight: 'https://chainhive.io/logo-light.png',
+                    logoDark: 'https://chainhive.io/logo-dark.png',
+                    defaultLanguage: 'en',
+                    mode: 'auto',
+                    theme: {
+                        primary: '#667eea',
+                    },
+                },
+            });
+            
+            const openloginAdapter = new OpenloginAdapter({
+                adapterSettings: {
+                    uxMode: 'popup',
+                    whiteLabel: {
+                        appName: 'ChainHive',
+                        appUrl: 'https://chainhive.io',
+                        logoLight: 'https://chainhive.io/logo-light.png',
+                        logoDark: 'https://chainhive.io/logo-dark.png',
+                    },
+                },
+            });
+            
+            web3auth.configureAdapter(openloginAdapter);
+            await web3auth.init();
+            
+            return web3auth;
+        } catch (error) {
+            console.error('Direct Web3Auth initialization failed:', error);
+            throw error;
         }
     }
 
@@ -516,10 +606,10 @@ class ChainHiveApp {
                 return {
                     request: async ({ method, params }) => {
                         if (method === 'eth_accounts') {
-                            return ['0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6']; // Demo address
+                            return ['0x742d35cc6634c0532925a3b8d4c9db96c4b4d8b6']; // Demo address (lowercase)
                         }
                         if (method === 'eth_requestAccounts') {
-                            return ['0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6'];
+                            return ['0x742d35cc6634c0532925a3b8d4c9db96c4b4d8b6'];
                         }
                         throw new Error(`Unsupported method: ${method}`);
                     }

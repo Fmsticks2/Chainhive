@@ -388,7 +388,8 @@ const Index = () => {
               </Tabs>
             </div>
           </div>
-        </main>
+        </div>
+      </main>
       
       <DataTicker />
       

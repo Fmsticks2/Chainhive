@@ -3,18 +3,19 @@
 
 class ChainHiveApp {
     constructor() {
-        this.web3auth = null;
-        this.provider = null;
-        this.userInfo = null;
+        this.wagmiConfig = null;
+        this.isWalletConnected = false;
+        this.currentAccount = null;
+        this.chainId = null;
         this.currentChain = 'ethereum';
         this.portfolioData = {};
         this.historicalData = {};
         this.realTimeUpdates = new Map();
         this.analysisCache = new Map();
-        this.isWeb3AuthInitialized = false;
         this.isAnalyzing = false;
         this.retryAttempts = 0;
         this.maxRetries = 3;
+        this.walletInitialized = false;
         
         // API configuration
         this.apiBaseUrl = this.getApiBaseUrl();
@@ -480,295 +481,206 @@ class ChainHiveApp {
         console.log('Initializing ChainHive...');
         this.updateConnectButtonState('initializing');
         
-        // Wait for Web3Auth scripts to load
-        await this.waitForWeb3AuthScripts();
+        // Initialize wallet connection
+        await this.initWalletConnection();
         
-        await this.initWeb3Auth();
         this.updateConnectButtonState('ready');
         this.setupEventListeners();
         this.setupChainTabs();
         console.log('ChainHive initialized successfully');
     }
 
-    async waitForWeb3AuthScripts() {
-        const maxWaitTime = 10000; // 10 seconds
-        const checkInterval = 100; // 100ms
-        let waitTime = 0;
-        
-        while (waitTime < maxWaitTime) {
-            if (window.Web3authModal && window.Web3authBase && window.Web3authEthereumProvider && window.Web3authOpenloginAdapter) {
-                console.log('Web3Auth scripts loaded successfully');
-                return;
-            }
-            
-            await new Promise(resolve => setTimeout(resolve, checkInterval));
-            waitTime += checkInterval;
-        }
-        
-        console.warn('Web3Auth scripts did not load within timeout period');
-    }
-
-    async initWeb3Auth() {
+    async initWalletConnection() {
         try {
-            // Check if Web3Auth objects are available globally
-            if (window.Web3authModal && window.Web3authBase && window.Web3authEthereumProvider && window.Web3authOpenloginAdapter) {
-                // Initialize Web3Auth directly
-                this.web3auth = await this.initWeb3AuthDirect();
-                this.isWeb3AuthInitialized = true;
-                
-                console.log('Web3Auth initialized successfully');
-                this.showNotification('Wallet functionality ready', 'info');
+            console.log('Initializing wallet connection...');
+            
+            // Check if MetaMask is available
+            if (typeof window !== 'undefined' && window.ethereum) {
+                console.log('MetaMask detected');
+                this.walletInitialized = true;
+                this.setupMetaMaskListeners();
             } else {
-                throw new Error('Web3Auth CDN scripts not loaded');
+                console.log('MetaMask not detected, using fallback');
+                this.walletInitialized = true;
             }
+
         } catch (error) {
-            console.error('Web3Auth initialization failed:', error);
-            // Fallback to demo mode only if Web3Auth fails
-            this.web3auth = this.createFallbackWeb3Auth();
-            await this.web3auth.init();
-            this.isWeb3AuthInitialized = true;
-            this.showNotification('Web3Auth unavailable - using demo mode', 'warning');
+            console.error('Failed to initialize wallet connection:', error);
+            this.showNotification('Failed to initialize wallet connection: ' + error.message, 'error');
+            this.walletInitialized = false;
         }
     }
 
-    async initWeb3AuthDirect() {
-        try {
-            // Access global Web3Auth objects
-            const { Web3Auth } = window.Web3authModal;
-            const { CHAIN_NAMESPACES } = window.Web3authBase;
-            const { EthereumPrivateKeyProvider } = window.Web3authEthereumProvider;
-            const { OpenloginAdapter } = window.Web3authOpenloginAdapter;
-            
-            const clientId = 'BGoxVrMZQQmk4OjKokOvZ3Vnq9wCiESRCEZJkoZq20hmDUEXS_26ZRgl0hpi8uMH-F6YgtRAM4WooDjj_efhsVA';
-            
-            const chainConfig = {
-                chainNamespace: CHAIN_NAMESPACES.EIP155,
-                chainId: '0x1', // Ethereum Mainnet
-                rpcTarget: 'https://rpc.ankr.com/eth',
-                displayName: 'Ethereum Mainnet',
-                blockExplorer: 'https://etherscan.io',
-                ticker: 'ETH',
-                tickerName: 'Ethereum',
-            };
-            
-            const privateKeyProvider = new EthereumPrivateKeyProvider({
-                config: { chainConfig },
-            });
-            
-            const web3auth = new Web3Auth({
-                clientId,
-                web3AuthNetwork: 'sapphire_devnet',
-                privateKeyProvider,
-                uiConfig: {
-                    appName: 'ChainHive',
-                    appUrl: 'https://chainhive.io',
-                    logoLight: 'https://chainhive.io/logo-light.png',
-                    logoDark: 'https://chainhive.io/logo-dark.png',
-                    defaultLanguage: 'en',
-                    mode: 'auto',
-                    theme: {
-                        primary: '#667eea',
-                    },
-                },
-            });
-            
-            const openloginAdapter = new OpenloginAdapter({
-                adapterSettings: {
-                    uxMode: 'popup',
-                    whiteLabel: {
-                        appName: 'ChainHive',
-                        appUrl: 'https://chainhive.io',
-                        logoLight: 'https://chainhive.io/logo-light.png',
-                        logoDark: 'https://chainhive.io/logo-dark.png',
-                    },
-                },
-            });
-            
-            web3auth.configureAdapter(openloginAdapter);
-            await web3auth.init();
-            
-            return web3auth;
-        } catch (error) {
-            console.error('Direct Web3Auth initialization failed:', error);
-            throw error;
-        }
-    }
-
-    createFallbackWeb3Auth() {
-        return {
-            init: async () => {
-                console.log('Fallback Web3Auth initialized');
-                return true;
-            },
-            connect: async () => {
-                // Simulate wallet connection for demo purposes
-                this.showNotification('Demo mode: Simulating wallet connection', 'info');
-                return {
-                    request: async ({ method, params }) => {
-                        if (method === 'eth_accounts') {
-                            return ['0x742d35cc6634c0532925a3b8d4c9db96c4b4d8b6']; // Demo address (lowercase)
-                        }
-                        if (method === 'eth_requestAccounts') {
-                            return ['0x742d35cc6634c0532925a3b8d4c9db96c4b4d8b6'];
-                        }
-                        throw new Error(`Unsupported method: ${method}`);
+    setupMetaMaskListeners() {
+        if (window.ethereum) {
+            // Listen for account changes
+            window.ethereum.on('accountsChanged', (accounts) => {
+                if (accounts.length > 0) {
+                    this.currentAccount = accounts[0];
+                    this.isWalletConnected = true;
+                    this.updateConnectButtonState('connected');
+                    this.showNotification('Wallet account changed', 'info');
+                    
+                    // Set the wallet address in the input field
+                    const walletInput = document.getElementById('walletAddress');
+                    if (walletInput) {
+                        walletInput.value = accounts[0];
                     }
-                };
-            },
-            logout: async () => {
-                console.log('Fallback logout');
-                this.showNotification('Demo wallet disconnected', 'info');
-            },
-            getUserInfo: async () => {
-                return {
-                    name: 'Demo User',
-                    email: 'demo@chainhive.io',
-                    profileImage: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=center'
-                };
-            },
-            connected: false,
-            provider: null
-        };
-    }
-
-    setupEventListeners() {
-        // Connect Wallet Button
-        document.getElementById('connectWallet').addEventListener('click', () => {
-            this.connectWallet();
-        });
-
-        // Get Started Button
-        document.getElementById('getStarted').addEventListener('click', () => {
-            this.connectWallet();
-        });
-
-        // Learn More Button
-        document.getElementById('learnMore').addEventListener('click', () => {
-            document.getElementById('features').scrollIntoView({ behavior: 'smooth' });
-        });
-
-        // Analyze Wallet Button
-        document.getElementById('analyzeWallet').addEventListener('click', () => {
-            this.analyzeWallet();
-        });
-
-        // Wallet Address Input (Enter key)
-        document.getElementById('walletAddress').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                this.analyzeWallet();
-            }
-        });
-
-        // Smooth scrolling for navigation links
-        document.querySelectorAll('.nav-links a').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const targetId = link.getAttribute('href').substring(1);
-                const targetElement = document.getElementById(targetId);
-                if (targetElement) {
-                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    this.disconnectWallet();
                 }
             });
-        });
-    }
 
-    setupChainTabs() {
-        document.querySelectorAll('.chain-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                // Remove active class from all tabs
-                document.querySelectorAll('.chain-tab').forEach(t => t.classList.remove('active'));
-                // Add active class to clicked tab
-                tab.classList.add('active');
-                // Update current chain
-                this.currentChain = tab.dataset.chain;
-                // Update portfolio display
-                this.displayPortfolioForChain(this.currentChain);
+            // Listen for chain changes
+            window.ethereum.on('chainChanged', (chainId) => {
+                this.chainId = parseInt(chainId, 16);
+                this.showNotification(`Network changed to ${this.getChainName(this.chainId)}`, 'info');
+                window.location.reload(); // Reload to update the UI
             });
-        });
+
+            // Listen for disconnect
+            window.ethereum.on('disconnect', () => {
+                this.disconnectWallet();
+            });
+        }
     }
 
     async connectWallet() {
-        try {
-            if (!this.isWeb3AuthInitialized || !this.web3auth) {
-                this.showNotification('Web3Auth is still initializing, please wait...', 'error');
-                return;
-            }
-
-            if (this.web3auth.connected) {
-                await this.disconnect();
-                return;
-            }
-
-            this.provider = await this.web3auth.connect();
-            this.userInfo = await this.web3auth.getUserInfo();
-            
-            // Get the actual wallet address
-            const userAddress = await this.getUserAddress();
-            
-            this.updateUIAfterConnection(userAddress);
-            
-            if (userAddress) {
-                this.showNotification(`Wallet connected: ${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`, 'success');
-                // Set the wallet address in the input field
-                document.getElementById('walletAddress').value = userAddress;
-            } else {
-                this.showNotification('Wallet connected successfully!', 'success');
-            }
-        } catch (error) {
-            console.error('Connection failed:', error);
-            this.showNotification('Failed to connect wallet', 'error');
-        }
-    }
-
-    async disconnect() {
-        try {
-            await this.web3auth.logout();
-            this.provider = null;
-            this.userInfo = null;
-            this.updateUIAfterDisconnection();
-            this.showNotification('Wallet disconnected', 'success');
-        } catch (error) {
-            console.error('Disconnection failed:', error);
-        }
-    }
-
-    async getUserAddress() {
-        if (!this.provider) return null;
+        console.log('connectWallet called');
         
-        try {
-            // Use ethers v5 syntax (loaded via CDN)
-            const ethersProvider = new ethers.providers.Web3Provider(this.provider);
-            const signer = ethersProvider.getSigner();
-            return await signer.getAddress();
-        } catch (error) {
-            console.error('Failed to get user address:', error);
-            return null;
+        if (!this.walletInitialized) {
+            console.log('Wallet not initialized');
+            this.showNotification('Wallet connection is not available', 'error');
+            return;
+        }
+
+        if (typeof window !== 'undefined' && window.ethereum) {
+            try {
+                console.log('Attempting to connect to MetaMask...');
+                this.updateConnectButtonState('connecting');
+                
+                // Request account access
+                const accounts = await window.ethereum.request({
+                    method: 'eth_requestAccounts',
+                });
+
+                if (accounts.length > 0) {
+                    this.currentAccount = accounts[0];
+                    this.isWalletConnected = true;
+                    
+                    // Get current chain ID
+                    const chainId = await window.ethereum.request({
+                        method: 'eth_chainId',
+                    });
+                    this.chainId = parseInt(chainId, 16);
+                    
+                    this.updateConnectButtonState('connected');
+                    this.showNotification('Wallet connected successfully!', 'success');
+                    
+                    // Set the wallet address in the input field
+                    const walletInput = document.getElementById('walletAddress');
+                    if (walletInput) {
+                        walletInput.value = accounts[0];
+                    }
+                }
+            } catch (error) {
+                console.error('Error connecting wallet:', error);
+                this.showNotification('Failed to connect wallet. Please try again.', 'error');
+                this.updateConnectButtonState('disconnected');
+            }
+        } else {
+            // Fallback for when MetaMask is not available
+            this.showNotification('MetaMask is not installed. Please install MetaMask to connect your wallet.', 'error');
+            this.updateConnectButtonState('disconnected');
+        }
+    }
+
+    async disconnectWallet() {
+        this.currentAccount = null;
+        this.chainId = null;
+        this.isWalletConnected = false;
+        this.updateConnectButtonState('disconnected');
+        this.showNotification('Wallet disconnected', 'info');
+        
+        // Clear the wallet address input
+        const walletInput = document.getElementById('walletAddress');
+        if (walletInput) {
+            walletInput.value = '';
         }
     }
 
     updateConnectButtonState(state) {
         const connectBtn = document.getElementById('connectWallet');
-        
-        switch(state) {
+        if (!connectBtn) {
+            console.warn('Connect wallet button not found');
+            return;
+        }
+
+        console.log('Updating button state to:', state);
+
+        switch (state) {
             case 'initializing':
                 connectBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Initializing...';
                 connectBtn.disabled = true;
-                connectBtn.style.background = 'linear-gradient(135deg, #6b7280 0%, #9ca3af 100%)';
-                break;
-            case 'ready':
-                connectBtn.innerHTML = '<i class="fas fa-wallet"></i> Connect Wallet';
-                connectBtn.disabled = false;
-                connectBtn.style.background = 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)';
+                connectBtn.className = 'connect-btn initializing';
                 break;
             case 'connected':
-                if (this.userInfo && this.userInfo.name) {
-                    connectBtn.innerHTML = `<i class="fas fa-user"></i> ${this.userInfo.name}`;
-                } else {
-                    connectBtn.innerHTML = '<i class="fas fa-wallet"></i> Connected';
-                }
+                connectBtn.innerHTML = `<i class="fas fa-wallet"></i> ${this.formatAddress(this.currentAccount)}`;
+                connectBtn.className = 'connect-btn connected';
                 connectBtn.disabled = false;
-                connectBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+                connectBtn.onclick = () => this.disconnectWallet();
                 break;
+            case 'connecting':
+                connectBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting...';
+                connectBtn.disabled = true;
+                connectBtn.className = 'connect-btn connecting';
+                break;
+            case 'disconnected':
+            case 'ready':
+            default:
+                connectBtn.innerHTML = '<i class="fas fa-wallet"></i> Connect Wallet';
+                connectBtn.className = 'connect-btn';
+                connectBtn.disabled = false;
+                connectBtn.onclick = () => this.connectWallet();
+                break;
+        }
+    }
+
+    formatAddress(address) {
+        if (!address) return '';
+        return `${address.slice(0, 6)}...${address.slice(-4)}`;
+    }
+
+    getChainName(chainId) {
+        switch (chainId) {
+            case 1:
+                return 'Ethereum';
+            case 137:
+                return 'Polygon';
+            case 10:
+                return 'Optimism';
+            case 42161:
+                return 'Arbitrum';
+            case 56:
+                return 'BSC';
+            case 43114:
+                return 'Avalanche';
+            default:
+                return 'Unknown';
+        }
+    }
+
+    async getUserAddress() {
+        if (!this.appKit) return null;
+        
+        try {
+            // Use ethers v5 syntax (loaded via CDN)
+            const ethersProvider = new ethers.providers.Web3Provider(this.appKit.provider);
+            const signer = ethersProvider.getSigner();
+            return await signer.getAddress();
+        } catch (error) {
+            console.error('Failed to get user address:', error);
+            return null;
         }
     }
 
@@ -1263,6 +1175,11 @@ class ChainHiveApp {
     showNotification(message, type = 'success', duration = 4000) {
         const notification = document.getElementById('notification');
         
+        if (!notification) {
+            console.warn('Notification element not found');
+            return;
+        }
+        
         // Create notification content with icon
         const icons = {
             success: 'fa-check-circle',
@@ -1353,10 +1270,36 @@ class ChainHiveApp {
             console.error('Portfolio monitoring failed:', error);
         }
     }
+
+    async checkWalletConnection() {
+        if (typeof window !== 'undefined' && window.ethereum) {
+            try {
+                const accounts = await window.ethereum.request({
+                    method: 'eth_accounts',
+                });
+                
+                if (accounts.length > 0) {
+                    this.currentAccount = accounts[0];
+                    this.isWalletConnected = true;
+                    
+                    const chainId = await window.ethereum.request({
+                        method: 'eth_chainId',
+                    });
+                    this.chainId = parseInt(chainId, 16);
+                    
+                    this.updateConnectButtonState('connected');
+                    console.log('Wallet already connected:', accounts[0]);
+                }
+            } catch (error) {
+                console.error('Error checking wallet connection:', error);
+            }
+        }
+    }
 }
 
 // Initialize the application when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, initializing ChainHive...');
     window.chainHiveApp = new ChainHiveApp();
     
     // Setup enhanced monitoring after initialization

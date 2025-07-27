@@ -9,6 +9,7 @@ import morgan from 'morgan';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { NoditService } from '../nodit-service.js';
+import { MultiChainService } from '../src/multi-chain-service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,15 +18,228 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 const NODIT_API_KEY = process.env.NODIT_API_KEY;
 
-if (!NODIT_API_KEY) {
-  throw new Error('NODIT_API_KEY environment variable is required');
+// Initialize services
+let primaryService;
+let fallbackService;
+
+try {
+    // Try to use MultiChainService as primary
+    primaryService = new MultiChainService();
+    console.log('✅ MultiChainService initialized as primary service');
+    
+    // Keep NoditService as fallback if API key is available
+    if (NODIT_API_KEY) {
+        fallbackService = new NoditService(NODIT_API_KEY);
+        console.log('✅ NoditService initialized as fallback service');
+    }
+} catch (error) {
+    console.warn('⚠️ MultiChainService initialization failed, using NoditService only:', error.message);
+    
+    if (!NODIT_API_KEY) {
+        throw new Error('NODIT_API_KEY environment variable is required when MultiChainService is not available');
+    }
+    
+    primaryService = new NoditService(NODIT_API_KEY);
 }
 
-// Initialize NODIT service
-const noditService = new NoditService(NODIT_API_KEY);
+// Service wrapper to handle fallback logic
+const serviceWrapper = {
+    async getTokenBalances(address, chain) {
+        try {
+            if (primaryService instanceof MultiChainService) {
+                return await primaryService.getBalance(address, chain);
+            }
+            return await primaryService.getTokenBalances(address, chain);
+        } catch (error) {
+            if (fallbackService) {
+                console.warn(`Primary service failed for getTokenBalances, using fallback:`, error.message);
+                return await fallbackService.getTokenBalances(address, chain);
+            }
+            throw error;
+        }
+    },
+    
+    async getTransactionHistory(address, chain, limit, offset) {
+        try {
+            if (primaryService instanceof MultiChainService) {
+                return await primaryService.getTransactions(address, chain, { limit, offset });
+            }
+            return await primaryService.getTransactionHistory(address, chain, limit, offset);
+        } catch (error) {
+            if (fallbackService) {
+                console.warn(`Primary service failed for getTransactionHistory, using fallback:`, error.message);
+                return await fallbackService.getTransactionHistory(address, chain, limit, offset);
+            }
+            throw error;
+        }
+    },
+    
+    async getNFTData(address, chain) {
+        try {
+            if (primaryService instanceof MultiChainService) {
+                return await primaryService.getNFTs(address, chain);
+            }
+            return await primaryService.getNFTData(address, chain);
+        } catch (error) {
+            if (fallbackService) {
+                console.warn(`Primary service failed for getNFTData, using fallback:`, error.message);
+                return await fallbackService.getNFTData(address, chain);
+            }
+            throw error;
+        }
+    },
+    
+    // Delegate other methods to primary service (with fallback)
+    async getMultiChainPortfolio(...args) {
+        try {
+            return await primaryService.getMultiChainPortfolio(...args);
+        } catch (error) {
+            if (fallbackService) {
+                return await fallbackService.getMultiChainPortfolio(...args);
+            }
+            throw error;
+        }
+    },
+    
+    async generatePortfolioInsights(...args) {
+        try {
+            return await primaryService.generatePortfolioInsights(...args);
+        } catch (error) {
+            if (fallbackService) {
+                return await fallbackService.generatePortfolioInsights(...args);
+            }
+            throw error;
+        }
+    },
+    
+    async getTokenPrices(...args) {
+        try {
+            return await primaryService.getTokenPrices(...args);
+        } catch (error) {
+            if (fallbackService) {
+                return await fallbackService.getTokenPrices(...args);
+            }
+            throw error;
+        }
+    },
+    
+    async getGasFees(...args) {
+        try {
+            return await primaryService.getGasFees(...args);
+        } catch (error) {
+            if (fallbackService) {
+                return await fallbackService.getGasFees(...args);
+            }
+            throw error;
+        }
+    },
+    
+    async setupWebhook(...args) {
+        try {
+            return await primaryService.setupWebhook(...args);
+        } catch (error) {
+            if (fallbackService) {
+                return await fallbackService.setupWebhook(...args);
+            }
+            throw error;
+        }
+    },
+    
+    async processWebhookData(...args) {
+        try {
+            return await primaryService.processWebhookData(...args);
+        } catch (error) {
+            if (fallbackService) {
+                return await fallbackService.processWebhookData(...args);
+            }
+            throw error;
+        }
+    },
+    
+    async startPortfolioStream(...args) {
+        try {
+            return await primaryService.startPortfolioStream(...args);
+        } catch (error) {
+            if (fallbackService) {
+                return await fallbackService.startPortfolioStream(...args);
+            }
+            throw error;
+        }
+    },
+    
+    async stopPortfolioStream(...args) {
+        try {
+            return await primaryService.stopPortfolioStream(...args);
+        } catch (error) {
+            if (fallbackService) {
+                return await fallbackService.stopPortfolioStream(...args);
+            }
+            throw error;
+        }
+    },
+    
+    async getHistoricalData(...args) {
+        try {
+            return await primaryService.getHistoricalData(...args);
+        } catch (error) {
+            if (fallbackService) {
+                return await fallbackService.getHistoricalData(...args);
+            }
+            throw error;
+        }
+    },
+    
+    async getMarketConditions(...args) {
+        try {
+            return await primaryService.getMarketConditions(...args);
+        } catch (error) {
+            if (fallbackService) {
+                return await fallbackService.getMarketConditions(...args);
+            }
+            throw error;
+        }
+    },
+    
+    async getKairosChainData(...args) {
+        try {
+            return await primaryService.getKairosChainData(...args);
+        } catch (error) {
+            if (fallbackService) {
+                return await fallbackService.getKairosChainData(...args);
+            }
+            throw error;
+        }
+    },
+    
+    async initialize() {
+        const results = [];
+        try {
+            if (primaryService.initialize) {
+                await primaryService.initialize();
+                results.push('Primary service initialized');
+            }
+        } catch (error) {
+            console.warn('Primary service initialization failed:', error.message);
+        }
+        
+        try {
+            if (fallbackService && fallbackService.initialize) {
+                await fallbackService.initialize();
+                results.push('Fallback service initialized');
+            }
+        } catch (error) {
+            console.warn('Fallback service initialization failed:', error.message);
+        }
+        
+        return results;
+    }
+};
+
+// Use the service wrapper as noditService for backward compatibility
+const noditService = serviceWrapper;
 
 // Middleware
 app.use(helmet({
@@ -499,13 +713,25 @@ app.listen(PORT, () => {
     console.log(`🚀 ChainHive server running on port ${PORT}`);
     console.log(`📊 API endpoints available at http://localhost:${PORT}/api`);
     console.log(`🌐 Frontend available at http://localhost:${PORT}`);
-    console.log(`🔑 NODIT API Key: ${NODIT_API_KEY.substring(0, 8)}...`);
     
-    // Initialize NODIT service
-    noditService.initialize().then(() => {
-        console.log('✅ NODIT service initialized successfully');
+    if (NODIT_API_KEY) {
+        console.log(`🔑 NODIT API Key: ${NODIT_API_KEY.substring(0, 8)}...`);
+    }
+    
+    // Initialize services
+    noditService.initialize().then((results) => {
+        if (results && results.length > 0) {
+            console.log('✅ Services initialized:', results.join(', '));
+        } else {
+            console.log('✅ Services initialized successfully');
+        }
+        
+        // Log supported chains
+        if (primaryService instanceof MultiChainService) {
+            console.log('🔗 Supported chains: Ethereum, XRPL, Aptos, Polygon, BSC, Kaia');
+        }
     }).catch(error => {
-        console.error('❌ Failed to initialize NODIT service:', error);
+        console.error('❌ Failed to initialize services:', error);
     });
 });
 

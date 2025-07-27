@@ -206,20 +206,29 @@ const WalletAnalyzer = () => {
           <h3 className="text-lg font-semibold text-white mb-4">Token Balances</h3>
           <div className="space-y-3">
             {tokenBalances.map((token, index) => (
-              <div key={index} className="flex items-center justify-between glass p-3 rounded-lg">
+              <div 
+                key={index} 
+                className="flex items-center justify-between glass p-3 rounded-lg cursor-pointer hover:bg-white/5 transition-all duration-200 group"
+                onClick={() => {
+                  toast({
+                    title: `${token.symbol} Details`,
+                    description: `Balance: ${token.balance} ${token.symbol} | Value: ${formatCurrency(token.value_usd)} | 24h Change: ${token.change_24h.toFixed(2)}%`
+                  });
+                }}
+              >
                 <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                     <span className="text-xs font-bold text-white">
                       {token.symbol.charAt(0)}
                     </span>
                   </div>
                   <div>
-                    <p className="text-white font-medium">{token.symbol}</p>
+                    <p className="text-white font-medium group-hover:text-cyan-400 transition-colors">{token.symbol}</p>
                     <p className="text-gray-400 text-sm">{token.name}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-white font-medium">{formatCurrency(token.value_usd)}</p>
+                  <p className="text-white font-medium group-hover:text-cyan-400 transition-colors">{formatCurrency(token.value_usd)}</p>
                   <div className="flex items-center space-x-2">
                     <span className="text-gray-400 text-sm">{token.balance} {token.symbol}</span>
                     <span className={`text-xs flex items-center ${
@@ -288,15 +297,24 @@ const WalletAnalyzer = () => {
                   
                   <div className="space-y-2">
                     {chainData.tokens.map((token, index) => (
-                      <div key={index} className="flex items-center justify-between text-sm">
+                      <div 
+                        key={index} 
+                        className="flex items-center justify-between text-sm p-2 rounded hover:bg-white/5 cursor-pointer transition-all duration-200 group"
+                        onClick={() => {
+                          toast({
+                            title: `${token.symbol} on ${chainConfig?.name}`,
+                            description: `Balance: ${token.balance.toFixed(4)} ${token.symbol} | Value: ${formatCurrency(token.value)} | 24h Change: ${token.change24h.toFixed(2)}%`
+                          });
+                        }}
+                      >
                         <div className="flex items-center space-x-2">
-                          <span className="text-gray-300">{token.symbol}</span>
-                          <Badge variant="secondary" className="text-xs">
+                          <span className="text-gray-300 group-hover:text-cyan-400 transition-colors">{token.symbol}</span>
+                          <Badge variant="secondary" className="text-xs group-hover:bg-cyan-500/20 transition-colors">
                             {token.balance.toFixed(4)}
                           </Badge>
                         </div>
                         <div className="text-right">
-                          <span className="text-white">{formatCurrency(token.value)}</span>
+                          <span className="text-white group-hover:text-cyan-400 transition-colors">{formatCurrency(token.value)}</span>
                           <span className={`ml-2 text-xs ${
                             token.change24h >= 0 ? 'text-green-400' : 'text-red-400'
                           }`}>

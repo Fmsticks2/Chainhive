@@ -1,4 +1,6 @@
 
+import { NoditService } from './noditService';
+
 export interface ChainConfig {
   id: string;
   name: string;
@@ -93,9 +95,7 @@ export const SUPPORTED_CHAINS: ChainConfig[] = [
   }
 ];
 
-export const createProvider = (rpcUrl: string): JsonRpcProvider => {
-  return new JsonRpcProvider(rpcUrl);
-};
+// JsonRpcProvider import removed as we're using NoditService for API calls
 
 export class MultiChainService {
   private static instance: MultiChainService;
@@ -103,6 +103,16 @@ export class MultiChainService {
   private transactionCache: Map<string, TransactionData[]> = new Map();
   private lastUpdate = 0;
   private readonly CACHE_DURATION = 30000; // 30 seconds
+  private noditService: NoditService;
+
+  constructor() {
+    this.noditService = NoditService.getInstance();
+    // Set API key from environment if available
+    const apiKey = process.env.NODIT_API_KEY || import.meta.env?.VITE_NODIT_API_KEY;
+    if (apiKey) {
+      this.noditService.setApiKey(apiKey);
+    }
+  }
 
   static getInstance(): MultiChainService {
     if (!MultiChainService.instance) {
@@ -141,96 +151,97 @@ export class MultiChainService {
   }
 
   private async fetchPortfolioData(address: string, chains: string[]): Promise<WalletPortfolio> {
-    // Mock data - in real implementation, this would call Nodit APIs
-    const mockTokens: { [chain: string]: MultiChainTokenData[] } = {
-      ethereum: [
-        {
-          symbol: 'ETH',
-          name: 'Ethereum',
-          balance: 2.45,
-          price: 2345.67,
-          value: 5747.89,
-          change24h: 5.2,
-          chain: 'ethereum',
-          decimals: 18
-        },
-        {
-          symbol: 'USDC',
-          name: 'USD Coin',
-          balance: 1250.0,
-          price: 1.00,
-          value: 1250.0,
-          change24h: 0.01,
-          chain: 'ethereum',
-          contractAddress: '0xA0b86a33E6441d3c0b8f03c90C44DF4e0ec6C15f',
-          decimals: 6
-        }
-      ],
-      polygon: [
-        {
-          symbol: 'MATIC',
-          name: 'Polygon',
-          balance: 1500.0,
-          price: 0.82,
-          value: 1230.0,
-          change24h: 3.4,
-          chain: 'polygon',
-          decimals: 18
-        }
-      ]
-    };
-
     let totalValue = 0;
     let totalChange24h = 0;
     const chainsData: WalletPortfolio['chains'] = {};
 
+    // Fetch real data from Nodit API for each chain
     for (const chain of chains) {
-      const tokens = mockTokens[chain] || [];
-      const chainValue = tokens.reduce((sum, token) => sum + token.value, 0);
-      const chainChange = tokens.reduce((sum, token) => sum + (token.change24h * token.value / 100), 0) / chainValue * 100;
-      
-      chainsData[chain] = {
-        totalValue: chainValue,
-        tokens
-      };
-      
-      totalValue += chainValue;
-      totalChange24h += chainChange;
+      try {
+        console.log(`Fetching portfolio data for ${chain}:`, address);
+        
+        // Get token balances from Nodit API
+        const tokenBalances = await this.noditService.getTokenBalances(address, chain);
+        
+        // Convert Nodit token data to our format
+        const tokens: MultiChainTokenData[] = tokenBalances.map(token => ({
+          symbol: token.symbol,
+          name: token.name,
+          balance: parseFloat(token.balance) / Math.pow(10, token.decimals),
+          price: token.price_usd || 0,
+          value: token.value_usd || 0,
+          change24h: token.change_24h || 0,
+          chain: chain,
+          contractAddress: token.token_address,
+          decimals: token.decimals
+        }));
+
+        const chainValue = tokens.reduce((sum, token) => sum + token.value, 0);
+        const chainChange = tokens.length > 0 
+          ? tokens.reduce((sum, token) => sum + token.change24h, 0) / tokens.length 
+          : 0;
+        
+        chainsData[chain] = {
+          totalValue: chainValue,
+          tokens
+        };
+        
+        totalValue += chainValue;
+        totalChange24h += chainChange;
+        
+        console.log(`✅ Successfully fetched ${tokens.length} tokens for ${chain}, total value: $${chainValue.toFixed(2)}`);
+        
+      } catch (error) {
+        console.error(`❌ Failed to fetch portfolio data for ${chain}:`, error);
+        
+        // Fallback to empty data for failed chains
+        chainsData[chain] = {
+          totalValue: 0,
+          tokens: []
+        };
+      }
     }
 
     return {
       totalValue,
-      totalChange24h: totalChange24h / chains.length,
+      totalChange24h: chains.length > 0 ? totalChange24h / chains.length : 0,
       chains: chainsData
     };
   }
 
   private async fetchTransactionData(address: string, chain: string, limit: number): Promise<TransactionData[]> {
-    // Mock transaction data
-    const mockTransactions: TransactionData[] = [
-      {
-        hash: '0x1234...5678',
-        from: address,
-        to: '0xabcd...efgh',
-        value: 0.5,
-        timestamp: Date.now() - 3600000,
-        chain,
-        type: 'send',
-        status: 'success'
-      },
-      {
-        hash: '0x5678...9012',
-        from: '0xefgh...ijkl',
-        to: address,
-        value: 1.2,
-        timestamp: Date.now() - 7200000,
-        chain,
-        type: 'receive',
-        status: 'success'
-      }
-    ];
-
-    return mockTransactions.slice(0, limit);
+    try {
+      console.log(`Fetching transaction history for ${chain}:`, address);
+      
+      // Get transaction history from Nodit API
+      const transactions = await this.noditService.getTransactionHistory(address, chain, limit);
+      
+      // Convert Nodit transaction data to our format
+      const formattedTransactions: TransactionData[] = transactions.map(tx => {
+        const isReceive = tx.to_address.toLowerCase() === address.toLowerCase();
+        const value = parseFloat(tx.value) / Math.pow(10, 18); // Assuming 18 decimals for ETH-like chains
+        
+        return {
+          hash: tx.hash,
+          from: tx.from_address,
+          to: tx.to_address,
+          value: value,
+          timestamp: new Date(tx.timestamp).getTime(),
+          chain: chain,
+          type: isReceive ? 'receive' : 'send',
+          status: tx.status
+        };
+      });
+      
+      console.log(`✅ Successfully fetched ${formattedTransactions.length} transactions for ${chain}`);
+      return formattedTransactions;
+      
+    } catch (error) {
+      console.error(`❌ Failed to fetch transaction data for ${chain}:`, error);
+      
+      // Return empty array on error
+      return [];
+    }
   }
 
   isValidAddress(address: string, chain: string): boolean {

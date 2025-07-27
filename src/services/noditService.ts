@@ -65,31 +65,138 @@ export class NoditService {
 
   async getTokenBalances(address: string, chain: string): Promise<NoditTokenBalance[]> {
     try {
-      // Mock response for demo - replace with actual Nodit API call
-      return this.getMockTokenBalances(chain);
+      if (!this.apiKey) {
+        console.warn('No NODIT API key provided, using mock data');
+        return this.getMockTokenBalances(chain);
+      }
+
+      const endpoint = `${this.baseUrl}/${chain}/address/${address}/tokens`;
+      console.log(`Making API call to: ${endpoint}`);
+      
+      const response = await fetch(endpoint, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-KEY': this.apiKey,
+          'User-Agent': 'ChainHive/1.0.0'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log(`✅ Successfully fetched token balances for ${chain}:`, data);
+      
+      // Transform the response to match our interface
+      return data.tokens?.map((token: any) => ({
+        token_address: token.contract_address || token.address,
+        symbol: token.symbol,
+        name: token.name,
+        decimals: token.decimals,
+        balance: token.balance,
+        value_usd: token.value_usd || (parseFloat(token.balance) * (token.price_usd || 0) / Math.pow(10, token.decimals)),
+        price_usd: token.price_usd || 0,
+        change_24h: token.change_24h || 0
+      })) || [];
+      
     } catch (error) {
-      console.error('Error fetching token balances:', error);
-      return [];
+      console.error(`Error fetching token balances for ${chain}:`, error);
+      console.log('Falling back to mock data...');
+      return this.getMockTokenBalances(chain);
     }
   }
 
   async getTransactionHistory(address: string, chain: string, limit: number = 50): Promise<NoditTransaction[]> {
     try {
-      // Mock response for demo - replace with actual Nodit API call
-      return this.getMockTransactions(address, chain, limit);
+      if (!this.apiKey) {
+        console.warn('No NODIT API key provided, using mock data');
+        return this.getMockTransactions(address, chain, limit);
+      }
+
+      const endpoint = `${this.baseUrl}/${chain}/address/${address}/transactions?limit=${limit}`;
+      console.log(`Making API call to: ${endpoint}`);
+      
+      const response = await fetch(endpoint, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-KEY': this.apiKey,
+          'User-Agent': 'ChainHive/1.0.0'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log(`✅ Successfully fetched transaction history for ${chain}:`, data);
+      
+      // Transform the response to match our interface
+      return data.transactions?.map((tx: any) => ({
+        hash: tx.hash,
+        block_number: tx.block_number,
+        from_address: tx.from,
+        to_address: tx.to,
+        value: tx.value,
+        gas_used: tx.gas_used?.toString() || '0',
+        gas_price: tx.gas_price?.toString() || '0',
+        timestamp: tx.timestamp,
+        status: tx.status === 1 || tx.status === 'success' ? 'success' as const : 'failed' as const,
+        method: tx.method || 'transfer'
+      })) || [];
+      
     } catch (error) {
-      console.error('Error fetching transactions:', error);
-      return [];
+      console.error(`Error fetching transaction history for ${chain}:`, error);
+      console.log('Falling back to mock data...');
+      return this.getMockTransactions(address, chain, limit);
     }
   }
 
   async getNFTs(address: string, chain: string): Promise<NoditNFT[]> {
     try {
-      // Mock response for demo - replace with actual Nodit API call
-      return this.getMockNFTs(chain);
+      if (!this.apiKey) {
+        console.warn('No NODIT API key provided, using mock data');
+        return this.getMockNFTs(chain);
+      }
+
+      const endpoint = `${this.baseUrl}/${chain}/address/${address}/nfts`;
+      console.log(`Making API call to: ${endpoint}`);
+      
+      const response = await fetch(endpoint, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-KEY': this.apiKey,
+          'User-Agent': 'ChainHive/1.0.0'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log(`✅ Successfully fetched NFTs for ${chain}:`, data);
+      
+      // Transform the response to match our interface
+      return data.nfts?.map((nft: any) => ({
+        token_address: nft.contract_address || nft.address,
+        token_id: nft.token_id,
+        name: nft.name,
+        description: nft.description,
+        image_url: nft.image_url || nft.image,
+        collection_name: nft.collection_name || nft.collection,
+        floor_price: nft.floor_price || 0,
+        last_sale_price: nft.last_sale_price || 0
+      })) || [];
+      
     } catch (error) {
-      console.error('Error fetching NFTs:', error);
-      return [];
+      console.error(`Error fetching NFTs for ${chain}:`, error);
+      console.log('Falling back to mock data...');
+      return this.getMockNFTs(chain);
     }
   }
 

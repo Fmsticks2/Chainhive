@@ -551,6 +551,45 @@ class ChainHiveApp {
         }
     }
 
+    setupEventListeners() {
+        // Initialize all page functionality and event listeners
+        this.initPageFunctionality();
+    }
+
+    setupChainTabs() {
+        const chainTabs = document.querySelectorAll('.chain-tab');
+        const portfolioGrid = document.getElementById('portfolioGrid');
+        
+        chainTabs.forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                // Remove active class from all tabs
+                chainTabs.forEach(t => t.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                e.target.classList.add('active');
+                
+                // Get selected chain
+                const selectedChain = e.target.getAttribute('data-chain');
+                
+                // Filter portfolio display based on selected chain
+                this.filterPortfolioByChain(selectedChain);
+            });
+        });
+    }
+
+    filterPortfolioByChain(chain) {
+        const portfolioItems = document.querySelectorAll('.portfolio-item');
+        
+        portfolioItems.forEach(item => {
+            const itemChain = item.getAttribute('data-chain');
+            if (itemChain === chain || chain === 'all') {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
     async connectWallet() {
         console.log('connectWallet called');
         

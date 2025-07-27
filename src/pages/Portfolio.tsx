@@ -130,23 +130,85 @@ const Portfolio = () => {
                         </div>
                         
                         <div className="glass p-4 rounded-lg">
-                          <h4 className="font-medium text-white mb-3">AI Insights</h4>
-                          <ul className="space-y-2 text-sm text-gray-300">
-                            <li>• ETH represents 82% of your portfolio value, showing high concentration</li>
-                            <li>• USDC holdings provide good stability and liquidity</li>
-                            <li>• Your cross-chain presence reduces single-network risk</li>
-                            <li>• Recent transactions show consistent DeFi interaction</li>
-                          </ul>
+                        <h4 className="font-medium text-white mb-3">AI Insights</h4>
+                          <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 p-3 rounded-lg border border-cyan-500/20">
+                            {activeAddress ? (
+                              <ul className="space-y-2 text-sm text-gray-200">
+                                <li className="flex items-start gap-2">
+                                  <span className="text-cyan-400 mt-1">•</span>
+                                  <span>Portfolio analysis shows {selectedChains.length} active blockchain{selectedChains.length > 1 ? 's' : ''}</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                  <span className="text-cyan-400 mt-1">•</span>
+                                  <span>Multi-chain presence detected across {selectedChains.join(', ')} networks</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                  <span className="text-cyan-400 mt-1">•</span>
+                                  <span>Cross-chain diversification reduces single-network dependency risk</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                  <span className="text-cyan-400 mt-1">•</span>
+                                  <span>Real-time monitoring active for portfolio value changes</span>
+                                </li>
+                              </ul>
+                            ) : (
+                              <ul className="space-y-2 text-sm text-gray-400">
+                                <li className="flex items-start gap-2">
+                                  <span className="text-gray-500 mt-1">•</span>
+                                  <span>Connect wallet to receive personalized AI insights</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                  <span className="text-gray-500 mt-1">•</span>
+                                  <span>Analysis will include risk assessment and diversification metrics</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                  <span className="text-gray-500 mt-1">•</span>
+                                  <span>Get recommendations based on your portfolio composition</span>
+                                </li>
+                              </ul>
+                            )}
+                          </div>
                         </div>
 
                         <div className="glass p-4 rounded-lg">
                           <h4 className="font-medium text-white mb-3">Recommendations</h4>
-                          <ul className="space-y-2 text-sm text-gray-300">
-                            <li>• Consider diversifying beyond ETH to reduce concentration risk</li>
-                            <li>• Explore yield opportunities with your USDC holdings</li>
-                            <li>• Monitor gas optimization strategies for Ethereum transactions</li>
-                            <li>• Consider adding exposure to emerging L2 tokens</li>
-                          </ul>
+                          <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 p-3 rounded-lg border border-purple-500/20">
+                            {activeAddress ? (
+                              <ul className="space-y-2 text-sm text-gray-200">
+                                <li className="flex items-start gap-2">
+                                  <span className="text-purple-400 mt-1">•</span>
+                                  <span>{selectedChains.length < 3 ? 'Consider diversifying across more blockchain networks' : 'Maintain current multi-chain strategy'}</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                  <span className="text-purple-400 mt-1">•</span>
+                                  <span>Explore yield opportunities with your stablecoin holdings</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                  <span className="text-purple-400 mt-1">•</span>
+                                  <span>Monitor gas optimization strategies for {selectedChains.includes('ethereum') ? 'Ethereum' : 'active network'} transactions</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                  <span className="text-purple-400 mt-1">•</span>
+                                  <span>Set up alerts for significant portfolio value changes</span>
+                                </li>
+                              </ul>
+                            ) : (
+                              <ul className="space-y-2 text-sm text-gray-400">
+                                <li className="flex items-start gap-2">
+                                  <span className="text-gray-500 mt-1">•</span>
+                                  <span>Connect wallet to receive personalized investment recommendations</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                  <span className="text-gray-500 mt-1">•</span>
+                                  <span>AI will suggest optimization strategies based on your holdings</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                  <span className="text-gray-500 mt-1">•</span>
+                                  <span>Get alerts for market opportunities and risk management</span>
+                                </li>
+                              </ul>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ) : (

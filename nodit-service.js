@@ -45,6 +45,16 @@ class NoditService {
         this.cache = new Map();
         this.rateLimiter = new RateLimiter(100, 60000); // 100 requests per minute
         this.initialized = false;
+        
+        // Chains actually supported by Nodit API (based on documentation)
+        this.noditSupportedChains = {
+            ethereum: true,
+            polygon: true,
+            bsc: true,
+            arbitrum: true,
+            optimism: true,
+            kairos: true
+        };
     }
 
     // ==================== INITIALIZATION ====================
@@ -148,6 +158,12 @@ class NoditService {
     
     async getTokenBalances(address, chain) {
         try {
+            // Check if chain is supported by Nodit API
+            if (!this.isSupportedChain(chain)) {
+                console.warn(`Chain ${chain} is not supported by Nodit API`);
+                return this.getMockTokenBalances(address, chain);
+            }
+            
             const endpoint = `/v1/${chain}/address/${address}/tokens`;
             const response = await this.makeRequest(endpoint);
             
@@ -164,27 +180,20 @@ class NoditService {
                 verified: token.verified
             }));
         } catch (error) {
-            console.warn(`Token balances not available for ${chain}:`, error.message);
+            console.error(`Token balances not available for ${chain}:`, error.message);
             // Return mock data for unsupported chains
-            return [
-                {
-                    address: '0x0000000000000000000000000000000000000000',
-                    symbol: chain === 'ethereum' ? 'ETH' : 'NATIVE',
-                    name: chain === 'ethereum' ? 'Ethereum' : 'Native Token',
-                    decimals: 18,
-                    balance: '1000000000000000000',
-                    balanceFormatted: '1.0',
-                    priceUSD: 2000,
-                    valueUSD: 2000,
-                    logo: null,
-                    verified: true
-                }
-            ];
+            return this.getMockTokenBalances(address, chain);
         }
     }
     
     async getNFTPortfolio(address, chain) {
         try {
+            // Check if chain is supported by Nodit API
+            if (!this.isSupportedChain(chain)) {
+                console.warn(`Chain ${chain} is not supported by Nodit API`);
+                return [];
+            }
+            
             const endpoint = `/v1/${chain}/address/${address}/nfts`;
             const response = await this.makeRequest(endpoint);
             
@@ -205,7 +214,7 @@ class NoditService {
                 estimatedValue: nft.estimated_value
             }));
         } catch (error) {
-            console.warn(`NFT data not available for ${chain}:`, error.message);
+            console.error(`NFT data not available for ${chain}:`, error.message);
             // Return empty array for unsupported chains
             return [];
         }
@@ -213,6 +222,12 @@ class NoditService {
     
     async getRecentTransactions(address, chain, limit = 50) {
         try {
+            // Check if chain is supported by Nodit API
+            if (!this.isSupportedChain(chain)) {
+                console.warn(`Chain ${chain} is not supported by Nodit API`);
+                return [];
+            }
+            
             const endpoint = `/v1/${chain}/address/${address}/transactions?limit=${limit}`;
             const response = await this.makeRequest(endpoint);
             
@@ -231,10 +246,142 @@ class NoditService {
                 tokenTransfers: tx.token_transfers || []
             }));
         } catch (error) {
-            console.warn(`Transaction history not available for ${chain}:`, error.message);
+            console.error(`Transaction history not available for ${chain}:`, error.message);
             // Return empty array for unsupported chains
             return [];
         }
+    }
+
+    // ==================== HISTORICAL DATA ====================
+    
+    async getHistoricalData(address, days = 30) {
+        try {
+            // Try to get historical data from cache first
+            const cacheKey = `historical_${address}_${days}`;
+            const cached = this.cache.get(cacheKey);
+            if (cached) {
+                return cached;
+            }
+            
+            // Generate mock historical data since API doesn't support it yet
+            const historicalData = this.generateMockHistoricalData(address, days);
+            
+            // Cache the result
+            this.cache.set(cacheKey, historicalData, 300); // 5 minutes cache
+            
+            return historicalData;
+        } catch (error) {
+            console.error('Failed to get historical data:', error);
+            return this.generateMockHistoricalData(address, days);
+        }
+    }
+    
+    generateMockHistoricalData(address, days) {
+        const data = [];
+        const now = new Date();
+        const baseValue = Math.random() * 10000 + 1000; // Random base value between 1000-11000
+        
+        for (let i = days - 1; i >= 0; i--) {
+            const date = new Date(now.getTime() - (i * 24 * 60 * 60 * 1000));
+            const volatility = 0.1; // 10% daily volatility
+            const change = (Math.random() - 0.5) * 2 * volatility;
+            const value = baseValue * (1 + change * (i / days)); // Trending component
+            
+            data.push({
+                date: date.toISOString().split('T')[0],
+                timestamp: date.toISOString(),
+                totalValue: Math.max(0, value),
+                change24h: change * 100,
+                volume24h: Math.random() * value * 0.1
+            });
+        }
+        
+        return {
+            address,
+            days,
+            data,
+            summary: {
+                startValue: data[0]?.totalValue || 0,
+                endValue: data[data.length - 1]?.totalValue || 0,
+                highValue: Math.max(...data.map(d => d.totalValue)),
+                lowValue: Math.min(...data.map(d => d.totalValue)),
+                totalChange: data.length > 1 ? 
+                    ((data[data.length - 1].totalValue - data[0].totalValue) / data[0].totalValue * 100) : 0
+            }
+        };
+    }
+    
+    async getMarketConditions() {
+        try {
+            // Try to get market conditions from cache first
+            const cacheKey = 'market_conditions';
+            const cached = this.cache.get(cacheKey);
+            if (cached) {
+                return cached;
+            }
+            
+            // Generate mock market conditions since API doesn't support it yet
+            const marketData = this.generateMockMarketConditions();
+            
+            // Cache the result
+            this.cache.set(cacheKey, marketData, 60); // 1 minute cache
+            
+            return marketData;
+        } catch (error) {
+            console.error('Failed to get market conditions:', error);
+            return this.generateMockMarketConditions();
+        }
+    }
+    
+    generateMockMarketConditions() {
+        const sentiments = ['bullish', 'bearish', 'neutral'];
+        const volatilities = ['low', 'medium', 'high'];
+        const trends = ['up', 'down', 'sideways'];
+        
+        return {
+            sentiment: sentiments[Math.floor(Math.random() * sentiments.length)],
+            volatility: volatilities[Math.floor(Math.random() * volatilities.length)],
+            trend: trends[Math.floor(Math.random() * trends.length)],
+            fearGreedIndex: Math.floor(Math.random() * 100),
+            marketCap: {
+                total: Math.floor(Math.random() * 1000000000000) + 2000000000000, // 2T-3T
+                change24h: (Math.random() - 0.5) * 10 // -5% to +5%
+            },
+            volume24h: {
+                total: Math.floor(Math.random() * 100000000000) + 50000000000, // 50B-150B
+                change24h: (Math.random() - 0.5) * 20 // -10% to +10%
+            },
+            dominance: {
+                btc: Math.random() * 20 + 40, // 40-60%
+                eth: Math.random() * 10 + 15, // 15-25%
+                others: Math.random() * 30 + 20 // 20-50%
+            },
+            topGainers: this.generateMockTopMovers('gainers'),
+            topLosers: this.generateMockTopMovers('losers'),
+            lastUpdated: new Date().toISOString()
+        };
+    }
+    
+    generateMockTopMovers(type) {
+        const tokens = ['BTC', 'ETH', 'BNB', 'ADA', 'SOL', 'DOT', 'MATIC', 'AVAX', 'LINK', 'UNI'];
+        const movers = [];
+        
+        for (let i = 0; i < 5; i++) {
+            const token = tokens[Math.floor(Math.random() * tokens.length)];
+            const change = type === 'gainers' ? 
+                Math.random() * 20 + 5 : // 5-25% gain
+                -(Math.random() * 20 + 5); // 5-25% loss
+                
+            movers.push({
+                symbol: token,
+                name: `${token} Token`,
+                price: Math.random() * 1000 + 10,
+                change24h: change,
+                volume24h: Math.random() * 1000000000
+            });
+        }
+        
+        return movers;
     }
 
     // ==================== MCP AI ANALYSIS ====================
@@ -463,19 +610,73 @@ class NoditService {
     
     async getTransactionHistory(address, chain, limit = 10, offset = 0) {
         try {
-            return await this.getRecentTransactions(address, chain, limit);
+            // Check if chain is supported by Nodit API
+            if (!this.isSupportedChain(chain)) {
+                console.warn(`Chain ${chain} is not supported by Nodit API`);
+                return {
+                    address,
+                    chain,
+                    transactions: [],
+                    totalCount: 0,
+                    error: `Chain ${chain} is not supported by Nodit API`,
+                    timestamp: new Date().toISOString()
+                };
+            }
+            
+            const transactions = await this.getRecentTransactions(address, chain, limit);
+            return {
+                address,
+                chain,
+                transactions,
+                totalCount: transactions.length,
+                timestamp: new Date().toISOString()
+            };
         } catch (error) {
             console.error(`Failed to get transaction history for ${chain}:`, error);
-            return [];
+            return {
+                address,
+                chain,
+                transactions: [],
+                totalCount: 0,
+                error: error.message,
+                timestamp: new Date().toISOString()
+            };
         }
     }
     
     async getNFTData(address, chain) {
         try {
-            return await this.getNFTPortfolio(address, chain);
+            // Check if chain is supported by Nodit API
+            if (!this.isSupportedChain(chain)) {
+                console.warn(`Chain ${chain} is not supported by Nodit API`);
+                return {
+                    address,
+                    chain,
+                    nfts: [],
+                    totalCount: 0,
+                    error: `Chain ${chain} is not supported by Nodit API`,
+                    timestamp: new Date().toISOString()
+                };
+            }
+            
+            const nfts = await this.getNFTPortfolio(address, chain);
+            return {
+                address,
+                chain,
+                nfts,
+                totalCount: nfts.length,
+                timestamp: new Date().toISOString()
+            };
         } catch (error) {
-            console.error(`Failed to get NFT data for ${chain}:`, error);
-            return [];
+            console.error(`NFT data not available for ${chain}:`, error.message);
+            return {
+                address,
+                chain,
+                nfts: [],
+                totalCount: 0,
+                error: error.message,
+                timestamp: new Date().toISOString()
+            };
         }
     }
     
@@ -671,6 +872,45 @@ class NoditService {
             confidence: 0.6
         };
     }
+    
+    // ==================== CHAIN SUPPORT UTILITIES ====================
+    
+    isSupportedChain(chain) {
+        return this.noditSupportedChains[chain] === true;
+    }
+    
+    getMockTokenBalances(address, chain) {
+         const chainInfo = this.supportedChains[chain];
+         if (!chainInfo) {
+             return [];
+         }
+         
+         return [
+             {
+                 address: '0x0000000000000000000000000000000000000000',
+                 symbol: chainInfo.symbol,
+                 name: chainInfo.name,
+                 decimals: 18,
+                 balance: '1000000000000000000',
+                 balanceFormatted: '1.0',
+                 priceUSD: chain === 'ethereum' ? 2000 : 100,
+                 valueUSD: chain === 'ethereum' ? 2000 : 100,
+                 logo: null,
+                 verified: true
+             }
+         ];
+     }
+     
+     getUnsupportedChainResponse(address, chain, dataType) {
+         return {
+             address,
+             chain,
+             [dataType]: [],
+             totalValue: 0,
+             error: `Chain ${chain} is not supported by Nodit API`,
+             timestamp: new Date().toISOString()
+         };
+     }
 }
 
 // Rate Limiter Class

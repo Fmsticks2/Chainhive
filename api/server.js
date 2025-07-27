@@ -379,6 +379,98 @@ app.get('/api/stream/portfolio/:address', async (req, res) => {
     }
 });
 
+// Get historical portfolio data
+app.get('/api/historical/:address', async (req, res) => {
+    try {
+        const { address } = req.params;
+        const { days = '30' } = req.query;
+        
+        if (!address) {
+            return res.status(400).json({ error: 'Address is required' });
+        }
+        
+        const historicalData = await noditService.getHistoricalData(address, parseInt(days));
+        
+        res.json({
+            success: true,
+            data: historicalData,
+            address,
+            days: parseInt(days),
+            timestamp: new Date().toISOString()
+        });
+        
+    } catch (error) {
+        console.error('Historical API error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch historical data',
+            message: error.message,
+            address: req.params.address,
+            days: parseInt(req.query.days || '30'),
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
+// Get market conditions
+app.get('/api/market-conditions', async (req, res) => {
+    try {
+        const marketData = await noditService.getMarketConditions();
+        
+        res.json({
+            success: true,
+            data: marketData,
+            timestamp: new Date().toISOString()
+        });
+        
+    } catch (error) {
+        console.error('Market conditions API error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch market conditions',
+            message: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
+// Get Kairos network data
+app.get('/api/kairos/:address', async (req, res) => {
+    try {
+        const { address } = req.params;
+        const { dataType = 'portfolio' } = req.query;
+        
+        if (!address) {
+            return res.status(400).json({ error: 'Address is required' });
+        }
+        
+        const kairosData = await noditService.getKairosChainData(address, dataType);
+        
+        res.json({
+            success: true,
+            data: kairosData,
+            network: 'kairos',
+            chainId: 1001,
+            contracts: {
+                ChainHiveToken: '0xC34571EF2deF39aF6e1b7F072740061CBc1ec421',
+                ChainHive: '0x76069a57EFaf234E18195756fe580E7064884A46',
+                ChainHiveMultiChain: '0xf93Cf0AB9b60967368714f7d8BB6A48c0034ACD2',
+                ChainHiveGovernance: '0x0601ED877D78dc4BE53cDd25A0dAfF3F6d261640',
+                TimelockController: '0x7c19b04AD3375e3710e5bBF4C528909C407af46B'
+            },
+            timestamp: new Date().toISOString()
+        });
+        
+    } catch (error) {
+        console.error('Kairos API error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch Kairos data',
+            message: error.message
+        });
+    }
+});
+
 // Error handling middleware
 app.use((error, req, res, next) => {
     console.error('Unhandled error:', error);
@@ -429,40 +521,3 @@ process.on('SIGINT', () => {
 });
 
 export default app;
-
-// Get Kairos network data
-app.get('/api/kairos/:address', async (req, res) => {
-    try {
-        const { address } = req.params;
-        const { dataType = 'portfolio' } = req.query;
-        
-        if (!address) {
-            return res.status(400).json({ error: 'Address is required' });
-        }
-        
-        const kairosData = await noditService.getKairosChainData(address, dataType);
-        
-        res.json({
-            success: true,
-            data: kairosData,
-            network: 'kairos',
-            chainId: 1001,
-            contracts: {
-                ChainHiveToken: '0xC34571EF2deF39aF6e1b7F072740061CBc1ec421',
-                ChainHive: '0x76069a57EFaf234E18195756fe580E7064884A46',
-                ChainHiveMultiChain: '0xf93Cf0AB9b60967368714f7d8BB6A48c0034ACD2',
-                ChainHiveGovernance: '0x0601ED877D78dc4BE53cDd25A0dAfF3F6d261640',
-                TimelockController: '0x7c19b04AD3375e3710e5bBF4C528909C407af46B'
-            },
-            timestamp: new Date().toISOString()
-        });
-        
-    } catch (error) {
-        console.error('Kairos API error:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to fetch Kairos data',
-            message: error.message
-        });
-    }
-});

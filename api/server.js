@@ -18,7 +18,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 10000;
 const NODIT_API_KEY = process.env.NODIT_API_KEY;
 
 // Environment debugging for Render
@@ -1018,7 +1018,7 @@ app.use((req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 ChainHive server running on port ${PORT}`);
     console.log(`📊 API endpoints available at http://localhost:${PORT}/api`);
     console.log(`🌐 Frontend available at http://localhost:${PORT}`);
@@ -1027,21 +1027,12 @@ app.listen(PORT, () => {
         console.log(`🔑 NODIT API Key: ${NODIT_API_KEY.substring(0, 8)}...`);
     }
     
-    // Initialize services
-    noditService.initialize().then((results) => {
-        if (results && results.length > 0) {
-            console.log('✅ Services initialized:', results.join(', '));
-        } else {
-            console.log('✅ Services initialized successfully');
-        }
-        
-        // Log supported chains
-        if (primaryService instanceof MultiChainService) {
-            console.log('🔗 Supported chains: Ethereum, XRPL, Aptos, Polygon, BSC, Kaia');
-        }
-    }).catch(error => {
-        console.error('❌ Failed to initialize services:', error);
-    });
+    // Log supported chains
+    if (primaryService instanceof MultiChainService) {
+        console.log('🔗 Supported chains: Ethereum, XRPL, Aptos, Polygon, BSC, Kaia');
+    }
+    
+    console.log('✅ Server initialized successfully');
 });
 
 // Graceful shutdown

@@ -145,7 +145,8 @@
     "winston-daily-rotate-file": "^4.7.1",
     "ws": "^8.14.2",
     "yamljs": "^0.3.0",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "cross-env": "^7.0.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
@@ -164,7 +165,6 @@
     "@types/validator": "^13.11.7",
     "@vitejs/plugin-react-swc": "^3.5.0",
     "autoprefixer": "^10.4.20",
-    "cross-env": "^7.0.3",
     "css-loader": "^6.8.1",
     "eslint": "^9.9.0",
     "eslint-config-airbnb-base": "^15.0.0",

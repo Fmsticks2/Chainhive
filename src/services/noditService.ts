@@ -271,7 +271,7 @@ export class NoditService {
   async setupWebhook(webhookUrl: string, chains: string[]): Promise<boolean> {
     try {
       // Mock webhook setup - replace with actual Nodit webhook API
-      console.log('Setting up webhook for chains:', chains);
+      console.log('Setting up webhook:', webhookUrl, 'for chains:', chains);
       return true;
     } catch (error) {
       console.error('Error setting up webhook:', error);
@@ -321,7 +321,7 @@ export class NoditService {
     return mockData[chain as keyof typeof mockData] || [];
   }
 
-  private getMockTransactions(address: string, chain: string, limit: number): NoditTransaction[] {
+  private getMockTransactions(address: string, _chain: string, limit: number): NoditTransaction[] {
     return [
       {
         hash: '0x1234567890123456789012345678901234567890123456789012345678901234',
@@ -338,7 +338,7 @@ export class NoditService {
     ].slice(0, limit);
   }
 
-  private getMockNFTs(chain: string): NoditNFT[] {
+  private getMockNFTs(_chain: string): NoditNFT[] {
     return [
       {
         token_address: '0x60E4d786628Fea6478F785A6d7e704777c86a7c6',
@@ -353,7 +353,7 @@ export class NoditService {
     ];
   }
 
-  private getMockMCPAnalysis(portfolioData: any): NoditMCPResponse {
+  private getMockMCPAnalysis(_portfolioData: any): NoditMCPResponse {
     return {
       summary: 'Your portfolio shows strong diversification across major assets with a balanced risk profile. Current allocation favors established tokens like ETH and stablecoins, indicating a conservative strategy.',
       insights: [

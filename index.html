@@ -28,7 +28,7 @@
             --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             --error-gradient: linear-gradient(135deg, #fc466b 0%, #3f5efb 100%);
             --glass-bg: rgba(255, 255, 255, 0.1);
-            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-border: rgba(118, 38, 255, 0.649);
             --text-primary: #0f172a;
             --text-primary-dark: #656565;
             --text-secondary: #64748b;
@@ -83,6 +83,7 @@
             left: 0;
             right: 0;
             background: rgba(248, 250, 252, 0.8);
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
             backdrop-filter: blur(20px) saturate(180%);
             border-bottom: 1px solid var(--border-light);
             z-index: 1000;
@@ -214,8 +215,10 @@
             align-items: center;
             gap: 0.5rem;
             background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
+            -webkit-backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);            
+            border: 2px solid var(--glass-border);
             padding: 0.5rem 1rem;
             border-radius: var(--radius-2xl);
             font-size: 0.875rem;
@@ -280,8 +283,9 @@
             font-size: 1.1rem;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(10px);
-        }
+            -webkit-backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);        }
 
         .btn-primary:hover {
             transform: translateY(-3px);
@@ -305,8 +309,8 @@
 
         .stat-card {
             background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);            border: 1px solid var(--glass-border);
             padding: 1.5rem;
             border-radius: var(--radius-xl);
             text-align: center;
@@ -324,7 +328,7 @@
 
         .stat-label {
             font-size: 0.875rem;
-            color: var(--text-secondary);
+            color: var(--text-secondary) !important;
             font-weight: 500;
             margin-top: 0.5rem;
         }
@@ -549,12 +553,14 @@
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 1.5rem;
             margin-bottom: 3rem;
+            color: #0c4a6e;
         }
 
         .token-card {
             background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
+            -webkit-backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);            border: 1px solid var(--glass-border);
             border-radius: var(--border-radius);
             padding: 1.5rem;
             transition: var(--transition);
@@ -705,8 +711,9 @@
 
         .chain-summary-card {
             background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
+            -webkit-backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);            border: 1px solid var(--glass-border);
             border-radius: var(--border-radius);
             padding: 1.5rem;
             margin-bottom: 2rem;
@@ -917,8 +924,9 @@
             transform: translateX(400px);
             transition: var(--transition);
             z-index: 1000;
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
+            -webkit-backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);            border: 1px solid var(--glass-border);
             min-width: 300px;
             max-width: 400px;
             box-shadow: var(--shadow-strong);
@@ -1115,8 +1123,8 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);            border: 1px solid var(--glass-border);
             border-radius: var(--border-radius);
             padding: 2rem;
             z-index: 1001;
@@ -1236,8 +1244,8 @@
 
         .analytics-card {
             background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);            border: 1px solid var(--glass-border);
             border-radius: var(--border-radius);
             padding: 2rem;
             transition: var(--transition);
@@ -1463,6 +1471,11 @@
 
         .chart-placeholder {
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
             padding: 4rem 2rem;
             color: rgba(255, 255, 255, 0.6);
         }
@@ -1471,7 +1484,25 @@
             font-size: 3rem;
             margin-bottom: 1rem;
             opacity: 0.5;
+
         }
+
+        #loadChart {
+            display: flex;
+            align-items: center;
+            align-content: center;
+            justify-items: center;
+            justify-content: center;
+            flex-wrap: wrap !important;
+            height: 30px !important;
+            width: fit-content !important;
+            gap: .5rem;
+
+        .fa-play {
+            font-size: 1.5rem;
+            padding-top: 15px;
+        }
+    }
 
         /* API Section Styles */
         .api-section {
@@ -1489,8 +1520,8 @@
 
         .api-card {
             background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);            border: 1px solid var(--glass-border);
             border-radius: var(--border-radius);
             padding: 2rem;
             transition: var(--transition);
@@ -1610,8 +1641,8 @@
 
         .api-demo {
             background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);            border: 1px solid var(--glass-border);
             border-radius: var(--border-radius);
             padding: 2rem;
             margin-top: 2rem;
@@ -1711,8 +1742,8 @@
 
         .enterprise-card {
             background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);            border: 1px solid var(--glass-border);
             border-radius: var(--border-radius);
             padding: 2.5rem;
             transition: var(--transition);
@@ -1796,8 +1827,8 @@
 
         .enterprise-cta {
             background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);            border: 1px solid var(--glass-border);
             border-radius: var(--border-radius);
             padding: 3rem;
             text-align: center;
@@ -2160,19 +2191,8 @@
                 font-size: 0.8rem;
             }
 
-            #loadChart {
-                display: flex;
-                align-items: center;
-                align-content: center;
-                flex-wrap: wrap !important;
-                height: 30px !important;
-                gap: .5rem;
 
-                .fa-play {
-                    font-size: 1.5rem;
-                    padding-top: 15px;
-                }
-            }
+
 
             /* API Section Mobile */
             .api-section {
@@ -2927,8 +2947,10 @@
                     </div>
                     <div class="chart-container">
                         <div class="chart-placeholder">
-                            <i class="fas fa-chart-line"></i>
-                            <p>Interactive portfolio performance chart will be displayed here</p>
+                            <div class="text">
+                                <i class="fas fa-chart-line"></i>
+                                <p>Interactive portfolio performance chart will be displayed here</p>                                
+                            </div>
                             <button class="btn-primary" id="loadChart">
                                 <i class="fas fa-play"></i> 
                                 <span>Load Chart</span>

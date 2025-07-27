@@ -134,7 +134,13 @@ GET /api/mcp/apis
    RATE_LIMIT_MAX_REQUESTS=100
    ```
 
-4. **Start the application**
+4. **Verify Installation**
+   ```bash
+   # Run deployment verification
+   npm run verify:deployment
+   ```
+
+5. **Start the application**
    ```bash
    # Production
    npm start
@@ -142,6 +148,77 @@ GET /api/mcp/apis
    # Development
    npm run dev
    ```
+
+## Deployment
+
+### Render Deployment
+
+ChainHive is optimized for deployment on Render with comprehensive fixes for common deployment issues.
+
+#### Quick Deploy
+1. Fork this repository
+2. Connect to Render
+3. Set environment variables in Render dashboard:
+   ```
+   NODIT_API_KEY=your_api_key_here
+   NODE_ENV=production
+   RENDER=true
+   ```
+4. Deploy using the included `render.yaml` configuration
+
+#### Troubleshooting
+
+For detailed deployment troubleshooting and fixes, see [RENDER_DEPLOYMENT_FIXES.md](./RENDER_DEPLOYMENT_FIXES.md).
+
+**Common Issues:**
+- MCP server initialization timeouts
+- Module path resolution errors
+- Environment-specific configuration problems
+
+**Debug Commands:**
+```bash
+# Verify deployment readiness
+npm run verify:deployment
+
+# Debug Render environment
+npm run debug:render
+
+# Check MCP server status
+npm run health:check
+```
+
+### Other Platforms
+
+ChainHive can be deployed to any Node.js hosting platform:
+
+- **Vercel**: Use `vercel.json` configuration
+- **Heroku**: Standard Node.js buildpack
+- **AWS**: EC2, ECS, or Lambda
+- **Google Cloud**: App Engine or Cloud Run
+- **DigitalOcean**: App Platform
+
+### Environment Variables for Production
+
+```env
+# Core Configuration
+NODIT_API_KEY=your_api_key_here
+NODE_ENV=production
+PORT=3000
+
+# Render-specific (if deploying to Render)
+RENDER=true
+MCP_TIMEOUT=60000
+MCP_STARTUP_DELAY=5000
+
+# Security
+CORS_ALLOWED_ORIGINS=https://yourdomain.com
+VALID_API_KEYS=your_api_keys_here
+
+# Performance
+CACHE_TTL=300
+RATE_LIMIT_MAX_REQUESTS=100
+RATE_LIMIT_WINDOW_MS=900000
+```
 
 ## API Documentation
 

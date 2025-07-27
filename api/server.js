@@ -21,6 +21,17 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const NODIT_API_KEY = process.env.NODIT_API_KEY;
 
+// Environment debugging for Render
+if (process.env.RENDER === 'true' || process.env.NODE_ENV === 'production') {
+    console.log('🔍 Render Environment Debugging:');
+    console.log('   NODE_ENV:', process.env.NODE_ENV);
+    console.log('   RENDER:', process.env.RENDER);
+    console.log('   PORT:', process.env.PORT);
+    console.log('   Current working directory:', process.cwd());
+    console.log('   __dirname:', __dirname);
+    console.log('   NODIT_API_KEY available:', !!NODIT_API_KEY);
+}
+
 // Initialize services
 let primaryService;
 let fallbackService;
@@ -30,13 +41,15 @@ try {
     primaryService = new MultiChainService();
     console.log('✅ MultiChainService initialized as primary service');
     
-    // Initialize MCP service
+    // Initialize MCP service with enhanced error handling
     (async () => {
         try {
+            console.log('🔄 Attempting MCP initialization...');
             await primaryService.initializeMCP();
             console.log('✅ MCP service initialized successfully');
         } catch (error) {
             console.warn('⚠️ Failed to initialize MCP service:', error.message);
+            console.warn('   This is expected in some deployment environments and the app will continue without MCP');
         }
     })();
     
@@ -44,15 +57,22 @@ try {
     if (NODIT_API_KEY) {
         fallbackService = new NoditService(NODIT_API_KEY);
         console.log('✅ NoditService initialized as fallback service');
+    } else {
+        console.warn('⚠️ NODIT_API_KEY not available, some features may be limited');
     }
 } catch (error) {
     console.warn('⚠️ MultiChainService initialization failed, using NoditService only:', error.message);
     
     if (!NODIT_API_KEY) {
-        throw new Error('NODIT_API_KEY environment variable is required when MultiChainService is not available');
+        console.error('❌ NODIT_API_KEY environment variable is required when MultiChainService is not available');
+        console.log('   Please set NODIT_API_KEY in your environment variables');
+        // Don't throw error in production, continue with limited functionality
+        if (process.env.NODE_ENV !== 'production') {
+            throw new Error('NODIT_API_KEY environment variable is required when MultiChainService is not available');
+        }
+    } else {
+        primaryService = new NoditService(NODIT_API_KEY);
     }
-    
-    primaryService = new NoditService(NODIT_API_KEY);
 }
 
 // Service wrapper to handle fallback logic

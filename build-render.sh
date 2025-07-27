@@ -11,7 +11,23 @@ echo "📋 NPM version: $(npm --version)"
 
 # Install dependencies
 echo "📦 Installing dependencies..."
-npm ci --only=production --legacy-peer-deps
+npm ci --legacy-peer-deps
+
+# Ensure MCP server is installed
+echo "🔧 Verifying MCP server installation..."
+if ! npm ls @noditlabs/nodit-mcp-server > /dev/null 2>&1; then
+    echo "📦 Installing MCP server..."
+    npm install @noditlabs/nodit-mcp-server@latest --save
+else
+    echo "✅ MCP server already installed"
+fi
+
+# Verify MCP server module exists
+if [ -f "node_modules/@noditlabs/nodit-mcp-server/dist/index.js" ]; then
+    echo "✅ MCP server module verified at: node_modules/@noditlabs/nodit-mcp-server/dist/index.js"
+else
+    echo "⚠️ MCP server module not found, but continuing build..."
+fi
 
 # Create public directory if it doesn't exist
 mkdir -p public

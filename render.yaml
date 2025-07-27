@@ -7,12 +7,17 @@ services:
     name: chainhive-backend
     env: node
     plan: starter # Can upgrade to standard/pro for production
-    buildCommand: npm ci --only=production --legacy-peer-deps
+    buildCommand: |
+      npm ci --legacy-peer-deps &&
+      npm ls @noditlabs/nodit-mcp-server || npm install @noditlabs/nodit-mcp-server@latest &&
+      echo "Build completed successfully"
     startCommand: node api/server.js
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
+      - key: RENDER
+        value: true
       - key: PORT
         value: 3000
       - key: NODIT_API_KEY
@@ -29,6 +34,10 @@ services:
         value: 300
       - key: LOG_LEVEL
         value: info
+      - key: MCP_TIMEOUT
+        value: 60000
+      - key: MCP_STARTUP_DELAY
+        value: 5000
     
   # Frontend Static Site
   - type: static

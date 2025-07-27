@@ -133,7 +133,7 @@ const Portfolio = () => {
                         <h4 className="font-medium text-white mb-3">AI Insights</h4>
                           <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 p-3 rounded-lg border border-cyan-500/20">
                             {activeAddress ? (
-                              <ul className="space-y-2 text-sm text-gray-200">
+                              <ul className="space-y-2 text-sm text-black">
                                 <li className="flex items-start gap-2">
                                   <span className="text-cyan-400 mt-1">•</span>
                                   <span>Portfolio analysis shows {selectedChains.length} active blockchain{selectedChains.length > 1 ? 's' : ''}</span>
@@ -174,7 +174,7 @@ const Portfolio = () => {
                           <h4 className="font-medium text-white mb-3">Recommendations</h4>
                           <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 p-3 rounded-lg border border-purple-500/20">
                             {activeAddress ? (
-                              <ul className="space-y-2 text-sm text-gray-200">
+                              <ul className="space-y-2 text-sm text-black">
                                 <li className="flex items-start gap-2">
                                   <span className="text-purple-400 mt-1">•</span>
                                   <span>{selectedChains.length < 3 ? 'Consider diversifying across more blockchain networks' : 'Maintain current multi-chain strategy'}</span>

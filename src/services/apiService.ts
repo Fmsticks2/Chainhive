@@ -1,6 +1,8 @@
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://your-production-url.com/api' 
-  : 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL 
+  ? `${import.meta.env.VITE_API_BASE_URL}/api`
+  : process.env.NODE_ENV === 'production' 
+    ? 'https://chainhive-backend.onrender.com/api' 
+    : 'http://localhost:3000/api';
 
 export interface ApiResponse<T = any> {
   success: boolean;

@@ -30,6 +30,16 @@ try {
     primaryService = new MultiChainService();
     console.log('✅ MultiChainService initialized as primary service');
     
+    // Initialize MCP service
+    (async () => {
+        try {
+            await primaryService.initializeMCP();
+            console.log('✅ MCP service initialized successfully');
+        } catch (error) {
+            console.warn('⚠️ Failed to initialize MCP service:', error.message);
+        }
+    })();
+    
     // Keep NoditService as fallback if API key is available
     if (NODIT_API_KEY) {
         fallbackService = new NoditService(NODIT_API_KEY);
@@ -680,6 +690,127 @@ app.get('/api/kairos/:address', async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Failed to fetch Kairos data',
+            message: error.message
+        });
+    }
+});
+
+// MCP Service endpoints
+app.get('/api/mcp/status', async (req, res) => {
+    try {
+        if (primaryService instanceof MultiChainService) {
+            const mcpStatus = await primaryService.getMCPStatus();
+            res.json({
+                success: true,
+                data: mcpStatus,
+                timestamp: new Date().toISOString()
+            });
+        } else {
+            res.json({
+                success: false,
+                error: 'MCP service not available',
+                message: 'MultiChainService is required for MCP functionality'
+            });
+        }
+    } catch (error) {
+        console.error('MCP status API error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to get MCP status',
+            message: error.message
+        });
+    }
+});
+
+// Restart MCP service
+app.post('/api/mcp/restart', async (req, res) => {
+    try {
+        if (primaryService instanceof MultiChainService) {
+            const success = await primaryService.restartMCP();
+            res.json({
+                success,
+                message: success ? 'MCP service restarted successfully' : 'Failed to restart MCP service',
+                timestamp: new Date().toISOString()
+            });
+        } else {
+            res.status(400).json({
+                success: false,
+                error: 'MCP service not available',
+                message: 'MultiChainService is required for MCP functionality'
+            });
+        }
+    } catch (error) {
+        console.error('MCP restart API error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to restart MCP service',
+            message: error.message
+        });
+    }
+});
+
+// Get all supported chains (including MCP chains)
+app.get('/api/chains/supported', async (req, res) => {
+    try {
+        if (primaryService instanceof MultiChainService) {
+            const chains = primaryService.getAllSupportedChains();
+            res.json({
+                success: true,
+                data: {
+                    chains,
+                    count: chains.length,
+                    mcpEnabled: primaryService.mcpEnabled
+                },
+                timestamp: new Date().toISOString()
+            });
+        } else {
+            res.json({
+                success: true,
+                data: {
+                    chains: ['ethereum', 'polygon', 'bsc', 'xrpl', 'aptos', 'kaia'],
+                    count: 6,
+                    mcpEnabled: false
+                },
+                timestamp: new Date().toISOString()
+            });
+        }
+    } catch (error) {
+        console.error('Supported chains API error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to get supported chains',
+            message: error.message
+        });
+    }
+});
+
+// Enhanced health check with MCP status
+app.get('/api/health/detailed', async (req, res) => {
+    try {
+        let healthStatus = {
+            status: 'healthy',
+            timestamp: new Date().toISOString(),
+            version: '1.0.0',
+            services: {
+                primary: primaryService.constructor.name,
+                fallback: fallbackService ? fallbackService.constructor.name : 'none'
+            }
+        };
+
+        if (primaryService instanceof MultiChainService) {
+            const chainHealth = await primaryService.getHealthStatus();
+            healthStatus.chains = chainHealth;
+        }
+
+        res.json({
+            success: true,
+            data: healthStatus
+        });
+    } catch (error) {
+        console.error('Detailed health check error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Health check failed',
             message: error.message
         });
     }

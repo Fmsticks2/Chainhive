@@ -164,7 +164,7 @@ class NoditService {
                 return this.getMockTokenBalances(address, chain);
             }
             
-            const endpoint = `/v1/${chain}/address/${address}/tokens`;
+            const endpoint = `/${chain}/address/${address}/tokens`;
             const response = await this.makeRequest(endpoint);
             
             return response.tokens.map(token => ({
@@ -194,7 +194,7 @@ class NoditService {
                 return [];
             }
             
-            const endpoint = `/v1/${chain}/address/${address}/nfts`;
+            const endpoint = `/${chain}/address/${address}/nfts`;
             const response = await this.makeRequest(endpoint);
             
             return response.nfts.map(nft => ({
@@ -228,7 +228,7 @@ class NoditService {
                 return [];
             }
             
-            const endpoint = `/v1/${chain}/address/${address}/transactions?limit=${limit}`;
+            const endpoint = `/${chain}/address/${address}/transactions?limit=${limit}`;
             const response = await this.makeRequest(endpoint);
             
             return response.transactions.map(tx => ({
@@ -387,70 +387,27 @@ class NoditService {
     // ==================== MCP AI ANALYSIS ====================
     
     async generatePortfolioInsights(portfolioData, userPreferences = {}) {
-        const mcpPayload = {
-            action: 'analyze_portfolio',
-            data: {
-                portfolio: portfolioData,
-                preferences: userPreferences,
-                analysis_type: 'comprehensive'
-            },
-            options: {
-                include_recommendations: true,
-                include_risk_analysis: true,
-                include_market_trends: true,
-                include_defi_opportunities: true
-            }
-        };
-        
-        try {
-            const response = await this.makeMCPRequest('/analyze', mcpPayload);
-            return this.formatAIInsights(response);
-        } catch (error) {
-            console.error('MCP analysis failed:', error);
-            return this.generateFallbackInsights(portfolioData);
-        }
+        // MCP endpoints are not available yet, using fallback insights
+        console.log('Generating portfolio insights using fallback data');
+        return this.generateFallbackInsights(portfolioData);
     }
     
     async detectAnomalies(address, timeframe = '24h') {
-        const mcpPayload = {
-            action: 'detect_anomalies',
-            data: {
-                address,
-                timeframe,
-                analysis_depth: 'deep'
-            }
-        };
-        
-        const response = await this.makeMCPRequest('/anomalies', mcpPayload);
-        return response.anomalies || [];
+        // MCP endpoints are not available yet, returning empty anomalies
+        console.log('Anomaly detection using fallback data');
+        return [];
     }
     
     async predictPriceMovements(tokens, timeframe = '1h') {
-        const mcpPayload = {
-            action: 'predict_prices',
-            data: {
-                tokens,
-                timeframe,
-                confidence_threshold: 0.7
-            }
-        };
-        
-        const response = await this.makeMCPRequest('/predictions', mcpPayload);
-        return response.predictions || [];
+        // MCP endpoints are not available yet, returning empty predictions
+        console.log('Price prediction using fallback data');
+        return [];
     }
     
     async findDeFiOpportunities(portfolioData) {
-        const mcpPayload = {
-            action: 'find_defi_opportunities',
-            data: {
-                portfolio: portfolioData,
-                risk_tolerance: 'medium',
-                min_apy: 5.0
-            }
-        };
-        
-        const response = await this.makeMCPRequest('/defi', mcpPayload);
-        return response.opportunities || [];
+        // MCP endpoints are not available yet, returning empty opportunities
+        console.log('DeFi opportunities using fallback data');
+        return [];
     }
 
     // ==================== REAL-TIME STREAMS ====================

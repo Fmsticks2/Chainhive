@@ -724,6 +724,227 @@ class NoditService {
         }
     }
 
+    // ==================== KAIROS CHAIN DATA ====================
+    
+    async getKairosChainData(address, dataType = 'portfolio') {
+        try {
+            console.log(`Fetching Kairos chain data for ${address}, type: ${dataType}`);
+            
+            // Check if Kairos is supported
+            if (!this.isSupportedChain('kairos')) {
+                console.warn('Kairos chain not supported by Nodit API, returning mock data');
+                return this.getMockKairosData(address, dataType);
+            }
+            
+            switch (dataType) {
+                case 'portfolio':
+                    return await this.getKairosPortfolio(address);
+                case 'tokens':
+                    return await this.getTokenBalances(address, 'kairos');
+                case 'nfts':
+                    return await this.getNFTData(address, 'kairos');
+                case 'transactions':
+                    return await this.getTransactionHistory(address, 'kairos', 50, 0);
+                case 'contracts':
+                    return this.getKairosContractData();
+                default:
+                    return await this.getKairosPortfolio(address);
+            }
+        } catch (error) {
+            console.error(`Failed to fetch Kairos data for ${address}:`, error.message);
+            return this.getMockKairosData(address, dataType);
+        }
+    }
+    
+    async getKairosPortfolio(address) {
+        try {
+            const [tokens, nfts, transactions] = await Promise.all([
+                this.getTokenBalances(address, 'kairos'),
+                this.getNFTData(address, 'kairos'),
+                this.getTransactionHistory(address, 'kairos', 10, 0)
+            ]);
+            
+            const totalValue = tokens.reduce((sum, token) => sum + (token.valueUSD || 0), 0);
+            
+            return {
+                address,
+                chain: 'kairos',
+                chainId: 1001,
+                tokens,
+                nfts,
+                transactions,
+                totalValue,
+                contracts: this.chainHiveContracts.kairos,
+                lastUpdated: new Date().toISOString()
+            };
+        } catch (error) {
+            console.error('Failed to fetch Kairos portfolio:', error);
+            return this.getMockKairosData(address, 'portfolio');
+        }
+    }
+    
+    getKairosContractData() {
+        return {
+            network: 'kairos',
+            chainId: 1001,
+            contracts: this.chainHiveContracts.kairos,
+            rpcUrl: this.supportedChains.kairos.rpcUrl,
+            explorerUrl: 'https://kairoscan.io',
+            timestamp: new Date().toISOString()
+        };
+    }
+    
+    getMockKairosData(address, dataType) {
+        const baseData = {
+            address,
+            chain: 'kairos',
+            chainId: 1001,
+            timestamp: new Date().toISOString()
+        };
+        
+        switch (dataType) {
+            case 'tokens':
+                return [{
+                    address: '0x0000000000000000000000000000000000000000',
+                    symbol: 'KAIA',
+                    name: 'Kaia',
+                    decimals: 18,
+                    balance: '1000000000000000000',
+                    balanceFormatted: '1.0',
+                    priceUSD: 0.15,
+                    valueUSD: 0.15,
+                    logo: null,
+                    verified: true
+                }];
+            case 'nfts':
+                return [];
+            case 'transactions':
+                return [];
+            case 'contracts':
+                return this.getKairosContractData();
+            default: // portfolio
+                return {
+                    ...baseData,
+                    tokens: this.getMockKairosData(address, 'tokens'),
+                    nfts: [],
+                    transactions: [],
+                    totalValue: 0.15,
+                    contracts: this.chainHiveContracts.kairos
+                };
+        }
+    }
+
+    // ==================== STREAMING METHODS ====================
+    
+    async startPortfolioStream(address, callback) {
+        // Generate a unique stream ID
+        const streamId = `stream_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
+        // Store the stream information
+        if (!this.activeStreams) {
+            this.activeStreams = new Map();
+        }
+        
+        // Set up periodic portfolio updates
+        const intervalId = setInterval(async () => {
+            try {
+                const portfolioData = await this.getMultiChainPortfolio(address);
+                callback({
+                    type: 'portfolio_update',
+                    address,
+                    data: portfolioData,
+                    timestamp: new Date().toISOString(),
+                    streamId
+                });
+            } catch (error) {
+                console.error('Portfolio stream error:', error);
+                callback({
+                    type: 'error',
+                    address,
+                    error: error.message,
+                    timestamp: new Date().toISOString(),
+                    streamId
+                });
+            }
+        }, 30000); // Update every 30 seconds
+        
+        // Store stream info
+        this.activeStreams.set(streamId, {
+            address,
+            callback,
+            intervalId,
+            startTime: new Date().toISOString()
+        });
+        
+        // Send initial data
+        try {
+            const initialData = await this.getMultiChainPortfolio(address);
+            callback({
+                type: 'portfolio_initial',
+                address,
+                data: initialData,
+                timestamp: new Date().toISOString(),
+                streamId
+            });
+        } catch (error) {
+            console.error('Initial portfolio stream error:', error);
+        }
+        
+        return streamId;
+    }
+    
+    async stopPortfolioStream(streamId) {
+        if (!this.activeStreams || !this.activeStreams.has(streamId)) {
+            return {
+                success: false,
+                error: 'Stream not found',
+                streamId
+            };
+        }
+        
+        const streamInfo = this.activeStreams.get(streamId);
+        
+        // Clear the interval
+        if (streamInfo.intervalId) {
+            clearInterval(streamInfo.intervalId);
+        }
+        
+        // Send final message
+        if (streamInfo.callback) {
+            streamInfo.callback({
+                type: 'stream_stopped',
+                address: streamInfo.address,
+                message: 'Portfolio streaming stopped',
+                timestamp: new Date().toISOString(),
+                streamId
+            });
+        }
+        
+        // Remove from active streams
+        this.activeStreams.delete(streamId);
+        
+        return {
+            success: true,
+            message: 'Portfolio streaming stopped',
+            streamId,
+            address: streamInfo.address,
+            duration: Date.now() - new Date(streamInfo.startTime).getTime()
+        };
+    }
+    
+    // Get all active streams (for debugging)
+    getActiveStreams() {
+        if (!this.activeStreams) {
+            return [];
+        }
+        
+        return Array.from(this.activeStreams.entries()).map(([streamId, info]) => ({
+            streamId,
+            address: info.address,
+            startTime: info.startTime
+        }));
+    }
+
     // ==================== UTILITY METHODS ====================
     
     async makeRequest(endpoint, options = {}) {

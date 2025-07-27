@@ -57,46 +57,46 @@ try {
 
 // Service wrapper to handle fallback logic
 const serviceWrapper = {
-    async getTokenBalances(address, chain) {
+    async getTokenBalances(chain, address) {
         try {
             if (primaryService instanceof MultiChainService) {
-                return await primaryService.getBalance(address, chain);
+                return await primaryService.getBalance(chain, address);
             }
-            return await primaryService.getTokenBalances(address, chain);
+            return await primaryService.getTokenBalances(chain, address);
         } catch (error) {
             if (fallbackService) {
                 console.warn(`Primary service failed for getTokenBalances, using fallback:`, error.message);
-                return await fallbackService.getTokenBalances(address, chain);
+                return await fallbackService.getTokenBalances(chain, address,);
             }
             throw error;
         }
     },
     
-    async getTransactionHistory(address, chain, limit, offset) {
+    async getTransactionHistory(chain, address, limit, offset) {
         try {
             if (primaryService instanceof MultiChainService) {
-                return await primaryService.getTransactions(address, chain, { limit, offset });
+                return await primaryService.getTransactions(chain, address, limit);
             }
-            return await primaryService.getTransactionHistory(address, chain, limit, offset);
+            return await primaryService.getTransactionHistory(chain, address, limit, offset);
         } catch (error) {
             if (fallbackService) {
                 console.warn(`Primary service failed for getTransactionHistory, using fallback:`, error.message);
-                return await fallbackService.getTransactionHistory(address, chain, limit, offset);
+                return await fallbackService.getTransactionHistory(chain, address, limit, offset);
             }
             throw error;
         }
     },
     
-    async getNFTData(address, chain) {
+    async getNFTData(chain, address) {
         try {
             if (primaryService instanceof MultiChainService) {
-                return await primaryService.getNFTs(address, chain);
+                return await primaryService.getNFTs(chain, address);
             }
-            return await primaryService.getNFTData(address, chain);
+            return await primaryService.getNFTData(chain, address);
         } catch (error) {
             if (fallbackService) {
                 console.warn(`Primary service failed for getNFTData, using fallback:`, error.message);
-                return await fallbackService.getNFTData(address, chain);
+                return await fallbackService.getNFTData(chain, address);
             }
             throw error;
         }
@@ -308,6 +308,67 @@ app.get('/api/health', (req, res) => {
             database: 'connected'
         }
     });
+});
+
+// MCP service status endpoint
+app.get('/api/mcp/status', async (req, res) => {
+    try {
+        let mcpStatus = {
+            enabled: false,
+            ready: false,
+            error: 'MCP service not available'
+        };
+        
+        // Check if primary service has MCP capabilities
+        if (primaryService && typeof primaryService.getMCPStatus === 'function') {
+            mcpStatus = await primaryService.getMCPStatus();
+        }
+        
+        res.json({
+            success: true,
+            data: {
+                mcp: mcpStatus,
+                apiKey: process.env.NODIT_API_KEY ? 'configured' : 'missing',
+                timestamp: new Date().toISOString()
+            }
+        });
+        
+    } catch (error) {
+        console.error('MCP status check error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to check MCP status',
+            message: error.message
+        });
+    }
+});
+
+// MCP service restart endpoint
+app.post('/api/mcp/restart', async (req, res) => {
+    try {
+        if (!primaryService || typeof primaryService.restartMCP !== 'function') {
+            return res.status(404).json({
+                success: false,
+                error: 'MCP service not available'
+            });
+        }
+        
+        const success = await primaryService.restartMCP();
+        
+        res.json({
+            success,
+            message: success ? 'MCP service restarted successfully' : 'Failed to restart MCP service',
+            timestamp: new Date().toISOString()
+        });
+        
+    } catch (error) {
+        console.error('MCP restart error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to restart MCP service',
+            message: error.message
+        });
+    }
 });
 
 // Get Web3Auth configuration
@@ -598,6 +659,103 @@ app.get('/api/stream/portfolio/:address', async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Failed to start stream',
+            message: error.message
+        });
+    }
+});
+
+// Portfolio streaming start endpoint
+app.post('/api/portfolio/stream/start', async (req, res) => {
+    try {
+        const { address } = req.body;
+        
+        if (!address) {
+            return res.status(400).json({
+                success: false,
+                error: 'Address is required'
+            });
+        }
+        
+        // Start portfolio streaming
+        const streamId = await serviceWrapper.startPortfolioStream(address, (data) => {
+            // For POST endpoint, we don't stream directly
+            // This is handled by the GET SSE endpoint
+            console.log('Portfolio stream data:', data);
+        });
+        
+        res.json({
+            success: true,
+            message: 'Portfolio streaming started',
+            data: {
+                streamId,
+                address,
+                endpoint: `/api/stream/portfolio/${address}`,
+                startTime: new Date().toISOString()
+            }
+        });
+        
+    } catch (error) {
+        console.error('Portfolio stream start error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to start portfolio streaming',
+            message: error.message
+        });
+    }
+});
+
+// Portfolio streaming stop endpoint
+app.post('/api/portfolio/stream/stop', async (req, res) => {
+    try {
+        const { address, streamId } = req.body;
+        
+        if (!address && !streamId) {
+            return res.status(400).json({
+                success: false,
+                error: 'Address or streamId is required'
+            });
+        }
+        
+        let result;
+        if (streamId) {
+            // Stop specific stream by ID
+            result = await serviceWrapper.stopPortfolioStream(streamId);
+        } else {
+            // Stop all streams for address (fallback)
+            const activeStreams = noditService.getActiveStreams();
+            const addressStreams = activeStreams.filter(stream => stream.address === address);
+            
+            if (addressStreams.length === 0) {
+                return res.json({
+                    success: true,
+                    message: 'No active streams found for address',
+                    address
+                });
+            }
+            
+            // Stop all streams for this address
+            const results = await Promise.all(
+                addressStreams.map(stream => serviceWrapper.stopPortfolioStream(stream.streamId))
+            );
+            
+            result = {
+                success: true,
+                message: `Stopped ${results.length} stream(s)`,
+                streams: results
+            };
+        }
+        
+        res.json({
+            success: true,
+            data: result,
+            timestamp: new Date().toISOString()
+        });
+        
+    } catch (error) {
+        console.error('Portfolio stream stop error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to stop portfolio streaming',
             message: error.message
         });
     }

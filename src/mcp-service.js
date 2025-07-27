@@ -74,13 +74,20 @@ class NoditMCPService extends EventEmitter {
           
           // Check if process is still running
           if (this.mcpProcess && !this.mcpProcess.killed) {
-            // Initialize the MCP server
-            await this.initialize();
-            
+            // Set connected status before initialization
             this.isConnected = true;
-            this.emit('connected');
-            console.log('Nodit MCP server started successfully');
-            return;
+            
+            try {
+              // Initialize the MCP server
+              await this.initialize();
+              this.emit('connected');
+              console.log('Nodit MCP server started successfully');
+              return;
+            } catch (initError) {
+              console.error('MCP initialization failed:', initError);
+              this.isConnected = false;
+              throw initError;
+            }
           }
         } catch (error) {
           lastError = error;

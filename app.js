@@ -487,6 +487,12 @@ class ChainHiveApp {
         this.updateConnectButtonState('ready');
         this.setupEventListeners();
         this.setupChainTabs();
+        
+        // Test button functionality
+        setTimeout(() => {
+            this.testButtonFunctionality();
+        }, 1000);
+        
         console.log('ChainHive initialized successfully');
     }
 
@@ -703,23 +709,48 @@ class ChainHiveApp {
     }
 
     async analyzeWallet() {
-        const walletAddress = document.getElementById('walletAddress').value.trim();
+        console.log('analyzeWallet method called');
         
-        if (!walletAddress) {
+        const walletAddress = document.getElementById('walletAddress').value.trim();
+        console.log('Wallet address from input:', walletAddress);
+        
+        // If no address provided and wallet is connected, use connected wallet
+        if (!walletAddress && this.isWalletConnected) {
+            console.log('No address in input, using connected wallet');
+            const addressInput = document.getElementById('walletAddress');
+            addressInput.value = this.currentAccount;
+            await this.analyzeWalletWithAddress(this.currentAccount);
+        } else if (walletAddress) {
+            console.log('Using address from input:', walletAddress);
+            await this.analyzeWalletWithAddress(walletAddress);
+        } else {
+            console.log('No address provided and no wallet connected');
+            this.showNotification('Please enter a wallet address or connect your wallet', 'error');
+        }
+    }
+
+    async analyzeWalletWithAddress(address) {
+        console.log('analyzeWalletWithAddress called with address:', address);
+        
+        if (!address) {
+            console.log('No address provided');
             this.showNotification('Please enter a wallet address', 'error');
             return;
         }
 
-        if (!this.isValidAddress(walletAddress)) {
+        if (!this.isValidAddress(address)) {
+            console.log('Invalid address format:', address);
             this.showNotification('Please enter a valid wallet address', 'error');
             return;
         }
 
         if (this.isAnalyzing) {
+            console.log('Analysis already in progress');
             this.showNotification('Analysis already in progress', 'error');
             return;
         }
 
+        console.log('Starting portfolio analysis for address:', address);
         this.isAnalyzing = true;
         this.showLoading(true);
         this.updateAnalysisProgress(0);
@@ -727,16 +758,15 @@ class ChainHiveApp {
         const startTime = Date.now();
         
         try {
-            // Check cache first for recent analysis
-            const cacheKey = `analysis_${walletAddress}`;
-            const cachedResult = this.analysisCache.get(cacheKey);
-            
-            if (cachedResult && Date.now() - cachedResult.timestamp < 300000) { // 5 minutes cache
-                this.portfolioData = cachedResult.data;
-                this.performanceMetrics.cacheHits++;
-                this.displayPortfolioResults();
-                this.showNotification('Portfolio analysis loaded from cache', 'success');
-                return;
+            // Check if this is the connected wallet
+            const isConnectedWallet = this.isWalletConnected && 
+                this.currentAccount.toLowerCase() === address.toLowerCase();
+
+            if (isConnectedWallet) {
+                console.log('Analyzing connected wallet');
+                this.showNotification('Analyzing your connected wallet', 'info');
+            } else {
+                console.log('Analyzing external wallet address');
             }
 
             // Reset portfolio data
@@ -745,9 +775,9 @@ class ChainHiveApp {
 
             // Fetch portfolio data with enhanced error handling and retries
             const portfolioPromises = [
-                this.fetchEthereumPortfolioEnhanced(walletAddress),
-                this.fetchAptosPortfolioEnhanced(walletAddress),
-                this.fetchXRPLPortfolioEnhanced(walletAddress)
+                this.fetchEthereumPortfolioEnhanced(address),
+                this.fetchAptosPortfolioEnhanced(address),
+                this.fetchXRPLPortfolioEnhanced(address)
             ];
 
             this.updateAnalysisProgress(30);
@@ -769,14 +799,15 @@ class ChainHiveApp {
             this.updateAnalysisProgress(70);
 
             // Fetch historical data for trend analysis
-            await this.fetchHistoricalData(walletAddress);
+            await this.fetchHistoricalData(address);
             this.updateAnalysisProgress(80);
 
             // Generate comprehensive AI insights
-            await this.generateEnhancedAIInsights(walletAddress);
+            await this.generateEnhancedAIInsights(address);
             this.updateAnalysisProgress(90);
 
             // Cache the results
+            const cacheKey = `analysis_${address}`;
             this.analysisCache.set(cacheKey, {
                 data: this.portfolioData,
                 timestamp: Date.now()
@@ -792,10 +823,11 @@ class ChainHiveApp {
                 (this.performanceMetrics.avgResponseTime + responseTime) / 2;
             this.performanceMetrics.apiCalls++;
             
+            console.log('Portfolio analysis completed successfully');
             this.showNotification(`Portfolio analysis completed in ${(responseTime/1000).toFixed(1)}s`, 'success');
             
             // Start real-time monitoring
-            this.startRealTimeMonitoring(walletAddress);
+            this.startRealTimeMonitoring(address);
             
         } catch (error) {
             console.error('Portfolio analysis failed:', error);
@@ -1295,6 +1327,288 @@ class ChainHiveApp {
             }
         }
     }
+
+    // Get current wallet state
+    getWalletState() {
+        return {
+            isConnected: this.isWalletConnected,
+            account: this.currentAccount,
+            chainId: this.chainId,
+            chainName: this.getChainName(this.chainId)
+        };
+    }
+
+    // Check if wallet is connected
+    isWalletConnected() {
+        return this.isWalletConnected && this.currentAccount;
+    }
+
+    // Get user's wallet address
+    getUserAddress() {
+        return this.currentAccount;
+    }
+
+    // Get current network
+    getCurrentNetwork() {
+        return {
+            chainId: this.chainId,
+            name: this.getChainName(this.chainId)
+        };
+    }
+
+    // Request wallet signature for message
+    async signMessage(message) {
+        if (!this.isWalletConnected) {
+            throw new Error('Wallet not connected');
+        }
+
+        try {
+            const signature = await window.ethereum.request({
+                method: 'personal_sign',
+                params: [message, this.currentAccount]
+            });
+            return signature;
+        } catch (error) {
+            console.error('Error signing message:', error);
+            throw error;
+        }
+    }
+
+    // Request transaction approval
+    async sendTransaction(transaction) {
+        if (!this.isWalletConnected) {
+            throw new Error('Wallet not connected');
+        }
+
+        try {
+            const txHash = await window.ethereum.request({
+                method: 'eth_sendTransaction',
+                params: [transaction]
+            });
+            return txHash;
+        } catch (error) {
+            console.error('Error sending transaction:', error);
+            throw error;
+        }
+    }
+
+    // Get wallet balance
+    async getWalletBalance() {
+        if (!this.isWalletConnected) {
+            throw new Error('Wallet not connected');
+        }
+
+        try {
+            const balance = await window.ethereum.request({
+                method: 'eth_getBalance',
+                params: [this.currentAccount, 'latest']
+            });
+            return balance;
+        } catch (error) {
+            console.error('Error getting balance:', error);
+            throw error;
+        }
+    }
+
+    // Switch network
+    async switchNetwork(chainId) {
+        if (!this.isWalletConnected) {
+            throw new Error('Wallet not connected');
+        }
+
+        try {
+            await window.ethereum.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: `0x${chainId.toString(16)}` }]
+            });
+        } catch (error) {
+            console.error('Error switching network:', error);
+            throw error;
+        }
+    }
+
+    // Add network to wallet
+    async addNetwork(networkConfig) {
+        if (!this.isWalletConnected) {
+            throw new Error('Wallet not connected');
+        }
+
+        try {
+            await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [networkConfig]
+            });
+        } catch (error) {
+            console.error('Error adding network:', error);
+            throw error;
+        }
+    }
+
+    // Get transaction count (nonce)
+    async getTransactionCount() {
+        if (!this.isWalletConnected) {
+            throw new Error('Wallet not connected');
+        }
+
+        try {
+            const nonce = await window.ethereum.request({
+                method: 'eth_getTransactionCount',
+                params: [this.currentAccount, 'latest']
+            });
+            return nonce;
+        } catch (error) {
+            console.error('Error getting transaction count:', error);
+            throw error;
+        }
+    }
+
+    // Estimate gas for transaction
+    async estimateGas(transaction) {
+        if (!this.isWalletConnected) {
+            throw new Error('Wallet not connected');
+        }
+
+        try {
+            const gasEstimate = await window.ethereum.request({
+                method: 'eth_estimateGas',
+                params: [transaction]
+            });
+            return gasEstimate;
+        } catch (error) {
+            console.error('Error estimating gas:', error);
+            throw error;
+        }
+    }
+
+    // Get gas price
+    async getGasPrice() {
+        if (!this.isWalletConnected) {
+            throw new Error('Wallet not connected');
+        }
+
+        try {
+            const gasPrice = await window.ethereum.request({
+                method: 'eth_gasPrice',
+                params: []
+            });
+            return gasPrice;
+        } catch (error) {
+            console.error('Error getting gas price:', error);
+            throw error;
+        }
+    }
+
+    // Request account access (if not already connected)
+    async requestAccountAccess() {
+        if (!this.isWalletConnected) {
+            return await this.connectWallet();
+        }
+        return this.currentAccount;
+    }
+
+    // Listen for wallet events
+    onWalletEvent(event, callback) {
+        if (window.ethereum) {
+            window.ethereum.on(event, callback);
+        }
+    }
+
+    // Remove wallet event listener
+    offWalletEvent(event, callback) {
+        if (window.ethereum) {
+            window.ethereum.removeListener(event, callback);
+        }
+    }
+
+    // Add wallet actions to token cards
+    addWalletActionsToTokens() {
+        const tokenCards = document.querySelectorAll('.token-card');
+        
+        tokenCards.forEach(card => {
+            // Add "Send" button for connected wallet
+            if (this.isWalletConnected) {
+                const actionsDiv = card.querySelector('.token-actions');
+                if (actionsDiv) {
+                    const sendButton = document.createElement('button');
+                    sendButton.className = 'btn-token-action';
+                    sendButton.innerHTML = '<i class="fas fa-paper-plane"></i> Send';
+                    sendButton.onclick = () => this.sendToken(card.dataset.tokenAddress, card.dataset.tokenSymbol);
+                    actionsDiv.appendChild(sendButton);
+                }
+            }
+        });
+    }
+
+    // Send token from connected wallet
+    async sendToken(tokenAddress, tokenSymbol) {
+        if (!this.isWalletConnected) {
+            this.showNotification('Please connect your wallet first', 'error');
+            return;
+        }
+
+        // Create a simple send interface
+        const recipient = prompt(`Enter recipient address for ${tokenSymbol}:`);
+        if (!recipient) return;
+
+        const amount = prompt(`Enter amount of ${tokenSymbol} to send:`);
+        if (!amount || isNaN(amount)) {
+            this.showNotification('Invalid amount', 'error');
+            return;
+        }
+
+        try {
+            // For ERC-20 tokens, you'd need to interact with the token contract
+            // This is a simplified example
+            const transaction = {
+                to: tokenAddress,
+                from: this.currentAccount,
+                value: '0x0', // For ERC-20, this would be 0
+                data: this.createERC20TransferData(recipient, amount)
+            };
+
+            const txHash = await this.sendTransaction(transaction);
+            this.showNotification(`Transaction sent! Hash: ${txHash}`, 'success');
+        } catch (error) {
+            this.showNotification(`Transaction failed: ${error.message}`, 'error');
+        }
+    }
+
+    // Create ERC-20 transfer data (simplified)
+    createERC20TransferData(to, amount) {
+        // This is a simplified version - you'd need proper ABI encoding
+        return '0xa9059cbb' + // transfer function signature
+               '000000000000000000000000' + to.slice(2) + // recipient address
+               '0000000000000000000000000000000000000000000000000000000000000000'; // amount (simplified)
+    }
+
+    // Add wallet info display
+    displayWalletInfo() {
+        if (!this.isWalletConnected) return;
+
+        const walletInfo = document.createElement('div');
+        walletInfo.className = 'wallet-info';
+        walletInfo.innerHTML = `
+            <div class="wallet-info-card">
+                <h3>Connected Wallet</h3>
+                <p><strong>Address:</strong> ${this.formatAddress(this.currentAccount)}</p>
+                <p><strong>Network:</strong> ${this.getChainName(this.chainId)}</p>
+                <button onclick="chainHiveApp.disconnectWallet()">Disconnect</button>
+            </div>
+        `;
+
+        // Add to page
+        const container = document.querySelector('.container');
+        if (container) {
+            container.insertBefore(walletInfo, container.firstChild);
+        }
+    }
+
+    clearAnalysisState() {
+        const walletInput = document.getElementById('walletAddress');
+        if (walletInput) {
+            walletInput.dataset.hasBeenAnalyzed = 'false';
+        }
+    }
 }
 
 // Initialize the application when DOM is loaded
@@ -1444,12 +1758,16 @@ ChainHiveApp.prototype.initEnterpriseHandlers = function() {
 
 ChainHiveApp.prototype.initSmoothScrolling = function() {
     // Hero CTA buttons
-    document.querySelectorAll('.btn-primary, .btn-secondary').forEach(btn => {
+    document.querySelectorAll('.btn-primary, .btn-secondary, .analyze-btn').forEach(btn => {
         if (btn.textContent.includes('Start Analysis')) {
             btn.addEventListener('click', () => {
                 document.getElementById('portfolio').scrollIntoView({ behavior: 'smooth' });
             });
-        } else if (btn.textContent.includes('Watch Demo')) {
+        } else if (btn.textContent.includes('Analyze Portfolio')) {
+            btn.addEventListener('click', () => {
+                this.playDemo();
+            });
+        }else if (btn.textContent.includes('Watch Demo')) {
             btn.addEventListener('click', () => {
                 this.playDemo();
             });
@@ -1569,21 +1887,52 @@ ChainHiveApp.prototype.openContactForm = function() {
 
 ChainHiveApp.prototype.playDemo = function() {
     this.showNotification('Starting demo...', 'info');
-    // Scroll to portfolio section and trigger demo
+    
+    // Scroll to portfolio section
     document.getElementById('portfolio').scrollIntoView({ behavior: 'smooth' });
     
     setTimeout(() => {
-        const demoAddress = '0x742d35Cc6634C0532925a3b8D4C9db96';
         const addressInput = document.getElementById('walletAddress');
         if (addressInput) {
-            addressInput.value = demoAddress;
-            // Trigger analysis
+            // If user has connected wallet, use their address
+            if (this.isWalletConnected && this.currentAccount) {
+                addressInput.value = this.currentAccount;
+                this.showNotification('Using your connected wallet for demo', 'info');
+            } else {
+                // Use a demo address if no wallet is connected
+                const demoAddress = '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6';
+                addressInput.value = demoAddress;
+                this.showNotification('Using demo wallet address', 'info');
+            }
+            
+            // Trigger analysis after a short delay
             setTimeout(() => {
                 this.analyzeWallet();
             }, 500);
         }
     }, 1000);
 };
+
+// Add a method to test button functionality
+// ChainHiveApp.prototype.testButtonFunctionality = function() {
+//     console.log('Testing button functionality...');
+    
+//     const getStartedBtn = document.getElementById('getStarted');
+//     const analyzeBtn = document.getElementById('analyzeWallet');
+//     const walletInput = document.getElementById('walletAddress');
+    
+//     console.log('Get Started button found:', !!getStartedBtn);
+//     console.log('Analyze Wallet button found:', !!analyzeBtn);
+//     console.log('Wallet input found:', !!walletInput);
+    
+//     if (getStartedBtn) {
+//         console.log('Get Started button text:', getStartedBtn.textContent);
+//     }
+    
+//     if (analyzeBtn) {
+//         console.log('Analyze Wallet button text:', analyzeBtn.textContent);
+//     }
+// }
 
 // Export for potential module usage
 if (typeof module !== 'undefined' && module.exports) {

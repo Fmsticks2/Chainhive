@@ -10,7 +10,7 @@
     "build:render": "chmod +x build-render.sh && ./build-render.sh",
     "postinstall": "npm ls @noditlabs/nodit-mcp-server || npm install @noditlabs/nodit-mcp-server@latest",
     "start": "node api/server.js",
-    "start:prod": "NODE_ENV=production node api/server.js",
+    "start:prod": "cross-env NODE_ENV=production node api/server.js",
     "start:dev": "nodemon api/server.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

@@ -147,6 +147,7 @@ class NoditMCPService extends EventEmitter {
 
           this.mcpProcess.on('error', (error) => {
             console.error('MCP Process Error:', error);
+            this.isConnected = false;
             lastError = error;
           });
 
@@ -154,6 +155,12 @@ class NoditMCPService extends EventEmitter {
             console.log(`MCP server process exited with code ${code}`);
             this.isConnected = false;
             this.emit('disconnected');
+          });
+
+          // Ensure stdin is ready
+          this.mcpProcess.stdin.on('error', (error) => {
+            console.error('MCP stdin error:', error);
+            this.isConnected = false;
           });
 
           // Wait longer for Render environment
@@ -164,14 +171,24 @@ class NoditMCPService extends EventEmitter {
           if (this.mcpProcess && !this.mcpProcess.killed) {
             console.log('✅ MCP process started, attempting initialization...');
             
+            // Additional delay to ensure MCP server is ready
+            console.log('⏳ Waiting for MCP server to be ready...');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
             try {
               // Initialize the MCP server with timeout
-              await Promise.race([
+              console.log('🚀 Starting MCP initialization...');
+              const initResult = await Promise.race([
                 this.initialize(),
                 new Promise((_, reject) => 
                   setTimeout(() => reject(new Error('MCP initialization timeout')), this.mcpTimeout)
                 )
               ]);
+              
+              console.log('✅ MCP initialization successful:', initResult);
+              
+              // Send initialized notification to complete the handshake
+              await this.sendInitializedNotification();
               
               this.isConnected = true;
               this.emit('connected');
@@ -236,7 +253,36 @@ class NoditMCPService extends EventEmitter {
       }
     };
 
-    return this.sendRequest(initRequest);
+    // Special handling for initialization - bypass connection check
+    return this.sendInitRequest(initRequest);
+  }
+
+  /**
+   * Send initialized notification to complete MCP handshake
+   */
+  async sendInitializedNotification() {
+    const notification = {
+      jsonrpc: '2.0',
+      method: 'notifications/initialized',
+      params: {}
+    };
+
+    return new Promise((resolve, reject) => {
+      if (!this.mcpProcess) {
+        reject(new Error('MCP process is not running'));
+        return;
+      }
+
+      try {
+        const notificationStr = JSON.stringify(notification) + '\n';
+        this.mcpProcess.stdin.write(notificationStr);
+        console.log('📤 Sent MCP initialized notification');
+        // Notifications don't expect responses, so resolve immediately
+        setTimeout(resolve, 100);
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 
   /**
@@ -380,6 +426,39 @@ class NoditMCPService extends EventEmitter {
   }
 
   /**
+   * Send initialization request (bypasses connection check)
+   */
+  sendInitRequest(request) {
+    return new Promise((resolve, reject) => {
+      if (!this.mcpProcess) {
+        reject(new Error('MCP process is not running'));
+        return;
+      }
+
+      const timeout = setTimeout(() => {
+        this.pendingRequests.delete(request.id);
+        reject(new Error('MCP server is not connected'));
+      }, this.mcpTimeout);
+
+      this.pendingRequests.set(request.id, {
+        resolve,
+        reject,
+        timeout
+      });
+
+      try {
+        const requestStr = JSON.stringify(request) + '\n';
+        this.mcpProcess.stdin.write(requestStr);
+        console.log('📤 Sent MCP init request:', JSON.stringify(request, null, 2));
+      } catch (error) {
+        this.pendingRequests.delete(request.id);
+        clearTimeout(timeout);
+        reject(error);
+      }
+    });
+  }
+
+  /**
    * Send a JSON-RPC request to the MCP server
    */
   sendRequest(request) {
@@ -415,6 +494,7 @@ class NoditMCPService extends EventEmitter {
       if (!line.trim()) continue;
       
       try {
+        console.log('📥 Received MCP response:', line);
         const response = JSON.parse(line);
         
         if (response.id && this.pendingRequests.has(response.id)) {
@@ -423,13 +503,24 @@ class NoditMCPService extends EventEmitter {
           this.pendingRequests.delete(response.id);
           
           if (response.error) {
+            console.error('❌ MCP response error:', response.error);
             reject(new Error(response.error.message || 'MCP request failed'));
           } else {
+            console.log('✅ MCP response success:', response.result);
             resolve(response.result);
           }
+        } else if (response.method) {
+          // Handle server-initiated requests (notifications)
+          console.log('📨 MCP server notification:', response.method, response.params);
+        } else {
+          console.log('🔍 Unhandled MCP response:', response);
         }
       } catch (error) {
         console.error('Failed to parse MCP response:', error, 'Data:', line);
+        // Try to handle non-JSON responses (like server startup messages)
+        if (line.includes('server') || line.includes('ready') || line.includes('started')) {
+          console.log('📋 MCP server message:', line);
+        }
       }
     }
   }

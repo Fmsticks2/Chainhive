@@ -3,7 +3,7 @@
 
 **Professional Multi-Chain Portfolio Management Platform**
 
-ChainHive is an enterprise-grade multi-chain portfolio tracker that leverages Nodit's Web3 Data APIs to provide comprehensive blockchain analytics and portfolio management across multiple networks.
+ChainHive is an enterprise-grade multi-chain portfolio tracker that leverages Nodit's Web3 Data APIs and Model Context Protocol (MCP) integration to provide comprehensive blockchain analytics and portfolio management across multiple networks.
 
 ## Features
 
@@ -25,11 +25,69 @@ ChainHive is an enterprise-grade multi-chain portfolio tracker that leverages No
 
 ### Technical Features
 - **High-Performance Architecture** - Optimized for speed and reliability
+- **MCP Integration** - Model Context Protocol for enhanced AI-driven blockchain interactions
 - **Rate Limiting** - Built-in API protection and throttling
 - **Caching Layer** - Redis-based caching for optimal performance
 - **Error Handling** - Comprehensive error management and logging
 - **CORS Protection** - Secure cross-origin request handling
 - **Health Monitoring** - Built-in health checks and monitoring endpoints
+
+## Nodit MCP Integration
+
+### What is MCP?
+
+Model Context Protocol (MCP) is an open standard that enables secure connections between AI applications and data sources. ChainHive integrates with Nodit's MCP server to provide AI-powered blockchain data access and analysis.
+
+### MCP Features in ChainHive
+
+- **AI-Powered Analytics** - Leverage AI models for advanced blockchain data analysis
+- **Secure Data Access** - MCP provides secure, standardized access to Nodit's Web3 APIs
+- **Real-time Processing** - Stream blockchain data through MCP for real-time insights
+- **Enhanced Query Capabilities** - Natural language queries for blockchain data
+- **Automated Insights** - AI-driven portfolio analysis and recommendations
+
+### MCP Server Configuration
+
+The MCP server is automatically configured and managed by ChainHive:
+
+```json
+{
+  "mcpServers": {
+    "nodit": {
+      "command": "npx",
+      "args": ["@noditlabs/nodit-mcp-server@latest"],
+      "env": {
+        "NODIT_API_KEY": "your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+### MCP API Endpoints
+
+**Check MCP Status**
+```http
+GET /api/mcp/status
+```
+
+**Restart MCP Server**
+```http
+POST /api/mcp/restart
+```
+
+**List Available APIs**
+```http
+GET /api/mcp/apis
+```
+
+### Benefits of MCP Integration
+
+1. **Standardized Access** - Consistent interface for blockchain data across different AI models
+2. **Enhanced Security** - Secure authentication and data transmission
+3. **Improved Performance** - Optimized data streaming and processing
+4. **AI-Ready Data** - Pre-processed data optimized for AI/ML applications
+5. **Future-Proof Architecture** - Built on open standards for long-term compatibility
 
 ## Prerequisites
 
@@ -130,6 +188,23 @@ GET /api/historical/{address}
 GET /api/historical/{address}?days=30
 ```
 
+#### MCP Endpoints
+
+**MCP Server Status**
+```http
+GET /api/mcp/status
+```
+
+**Restart MCP Server**
+```http
+POST /api/mcp/restart
+```
+
+**List MCP APIs**
+```http
+GET /api/mcp/apis
+```
+
 #### System Endpoints
 
 **Health Check**
@@ -183,10 +258,12 @@ Error responses:
 
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
-| `NODIT_API_KEY` | string | **required** | Your Nodit API key |
+| `NODIT_API_KEY` | string | **required** | Your Nodit API key (also used for MCP) |
 | `NODIT_BASE_URL` | string | `https://web3.nodit.io` | Nodit API base URL |
 | `NODE_ENV` | string | `development` | Application environment |
 | `PORT` | number | `3000` | Server port |
+| `MCP_ENABLED` | boolean | `true` | Enable/disable MCP integration |
+| `MCP_AUTO_RESTART` | boolean | `true` | Auto-restart MCP server on failure |
 | `RATE_LIMIT_MAX_REQUESTS` | number | `100` | Max requests per window |
 | `RATE_LIMIT_WINDOW_MS` | number | `900000` | Rate limit window (15 min) |
 | `CACHE_TTL` | number | `300` | Cache TTL in seconds |

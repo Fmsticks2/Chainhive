@@ -207,7 +207,11 @@ if ($Production) {
         
         if ($envList -notmatch "VITE_WEB3AUTH_CLIENT_ID") {
             Write-Status "Setting VITE_WEB3AUTH_CLIENT_ID..."
-            "BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4I70WhZDvIDnfcubVDT8fOiuQ" | vercel env add VITE_WEB3AUTH_CLIENT_ID production
+            if ($env:WEB3AUTH_CLIENT_ID) {
+                $env:WEB3AUTH_CLIENT_ID | vercel env add VITE_WEB3AUTH_CLIENT_ID production
+            } else {
+                Write-Warning "WEB3AUTH_CLIENT_ID environment variable not found. Please set it manually in Vercel dashboard."
+            }
         }
     } catch {
         Write-Warning "Could not set environment variables automatically. Please set them manually in Vercel dashboard."

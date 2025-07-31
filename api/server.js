@@ -18,7 +18,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 3001;
 const NODIT_API_KEY = process.env.NODIT_API_KEY;
 
 // Environment debugging for Render
@@ -393,9 +393,15 @@ app.post('/api/mcp/restart', async (req, res) => {
 
 // Get Web3Auth configuration
 app.get('/api/config', (req, res) => {
+    if (!process.env.WEB3AUTH_CLIENT_ID) {
+        return res.status(500).json({ error: 'WEB3AUTH_CLIENT_ID environment variable is required' });
+    }
+
     res.json({
+        clientId: process.env.WEB3AUTH_CLIENT_ID,
+        network: process.env.WEB3AUTH_NETWORK || "sapphire_mainnet",
         web3auth: {
-            clientId: process.env.WEB3AUTH_CLIENT_ID || "BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ",
+            clientId: process.env.WEB3AUTH_CLIENT_ID,
             network: process.env.WEB3AUTH_NETWORK || "sapphire_mainnet"
         }
     });
@@ -795,7 +801,12 @@ app.get('/api/historical/:address', async (req, res) => {
         
         res.json({
             success: true,
-            data: historicalData,
+            data: {
+                portfolio: historicalData.data || [],
+                summary: historicalData.summary || {},
+                address: historicalData.address || address,
+                days: historicalData.days || parseInt(days)
+            },
             address,
             days: parseInt(days),
             timestamp: new Date().toISOString()

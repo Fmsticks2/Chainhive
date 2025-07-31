@@ -135,7 +135,7 @@ class ApiService {
     if (type) {
       params.append('type', type);
     }
-    return this.request<any>(`/ai/insights?${params}`);
+    return this.request<any>(`/api/insights?${params}`);
   }
 
   // POST endpoints
@@ -193,7 +193,7 @@ class ApiService {
     confidenceScore: number;
     isPublic?: boolean;
   }): Promise<ApiResponse<any>> {
-    return this.request<any>('/ai/insights', {
+    return this.request<any>('/api/insights', {
       method: 'POST',
       body: JSON.stringify(insightData),
     });

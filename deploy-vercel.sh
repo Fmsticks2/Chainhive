@@ -151,7 +151,11 @@ if [ "$DEPLOYMENT_TYPE" = "production" ]; then
     
     if ! vercel env ls | grep -q "VITE_WEB3AUTH_CLIENT_ID"; then
         print_status "Setting VITE_WEB3AUTH_CLIENT_ID..."
-        echo "BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4I70WhZDvIDnfcubVDT8fOiuQ" | vercel env add VITE_WEB3AUTH_CLIENT_ID production
+        if [ -n "$WEB3AUTH_CLIENT_ID" ]; then
+            echo "$WEB3AUTH_CLIENT_ID" | vercel env add VITE_WEB3AUTH_CLIENT_ID production
+        else
+            print_warning "WEB3AUTH_CLIENT_ID environment variable not found. Please set it manually in Vercel dashboard."
+        fi
     fi
 fi
 

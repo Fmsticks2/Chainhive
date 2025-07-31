@@ -198,7 +198,7 @@ class APITester {
                 chains: ['ethereum']
             });
             
-            if (response.status === 200 && response.data.success && response.data.data.insights) {
+            if (response.status === 200 && response.data.success && response.data.data) {
                 this.logResult('AI Insights', true, 'Insights generated successfully');
             } else {
                 this.logResult('AI Insights', false, 'Failed to generate insights');

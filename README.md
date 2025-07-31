@@ -134,6 +134,14 @@ GET /api/mcp/apis
    RATE_LIMIT_MAX_REQUESTS=100
    ```
 
+   **⚠️ Security Best Practices:**
+   - **Never hardcode API keys** in your source code
+   - Always use environment variables for sensitive configuration
+   - Keep your `.env` file out of version control (it's already in `.gitignore`)
+   - Use different API keys for development and production environments
+   - Regularly rotate your API keys for enhanced security
+   - Ensure `WEB3AUTH_CLIENT_ID` is set as an environment variable
+
 4. **Verify Installation**
    ```bash
    # Run deployment verification

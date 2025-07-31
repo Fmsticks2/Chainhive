@@ -11,8 +11,8 @@ const getWeb3AuthObjects = () => {
   };
 };
 
-// Web3Auth configuration
-const clientId = 'BGoxVrMZQQmk4OjKokOvZ3Vnq9wCiESRCEZJkoZq20hmDUEXS_26ZRgl0hpi8uMH-F6YgtRAM4WooDjj_efhsVA';
+// Web3Auth configuration - will be fetched from API
+let clientId = null;
 
 // Web3Auth instance will be created in initWeb3Auth
 let web3auth = null;
@@ -20,6 +20,21 @@ let web3auth = null;
 // Initialize Web3Auth
 export const initWeb3Auth = async () => {
   try {
+    // Fetch Web3Auth configuration from API
+    if (!clientId) {
+      try {
+        const response = await fetch('/api/config');
+        if (!response.ok) {
+          throw new Error('Failed to fetch Web3Auth configuration');
+        }
+        const config = await response.json();
+        clientId = config.clientId;
+      } catch (error) {
+        console.error('Failed to fetch Web3Auth config:', error);
+        throw new Error('Web3Auth configuration not available');
+      }
+    }
+
     // Get Web3Auth objects
     const { Web3Auth, CHAIN_NAMESPACES, EthereumPrivateKeyProvider, OpenloginAdapter } = getWeb3AuthObjects();
     

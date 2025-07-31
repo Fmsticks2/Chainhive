@@ -6,9 +6,13 @@ module.exports = function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  if (!process.env.WEB3AUTH_CLIENT_ID) {
+    return res.status(500).json({ error: 'WEB3AUTH_CLIENT_ID environment variable is required' });
+  }
+
   res.json({
     web3auth: {
-      clientId: process.env.WEB3AUTH_CLIENT_ID || "BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ",
+      clientId: process.env.WEB3AUTH_CLIENT_ID,
       network: process.env.WEB3AUTH_NETWORK || "sapphire_mainnet"
     }
   });
